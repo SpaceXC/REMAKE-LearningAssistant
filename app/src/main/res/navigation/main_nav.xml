@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_nav"
+    app:startDestination="@id/problemList">
+
+    <fragment
+        android:id="@+id/problemList"
+        android:name="com.bakamcu.remake.learningassistant.ProblemList"
+        android:label="错题库"
+        tools:layout="@layout/problem_list_fragment" />
+</navigation>
