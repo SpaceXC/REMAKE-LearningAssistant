@@ -6,10 +6,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.RadioGroup;
 
-
-/**
- * Created by 好好奋斗 on 2018/8/31.
- */
 public class FlowRadioGroup extends RadioGroup {
     private static final String TAG = "MyRadioGroup";
 
