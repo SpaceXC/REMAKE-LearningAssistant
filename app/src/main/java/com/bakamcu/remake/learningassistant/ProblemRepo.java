@@ -1,6 +1,9 @@
 package com.bakamcu.remake.learningassistant;
 
+import static com.bakamcu.remake.learningassistant.AddProblem.TAG;
+
 import android.content.Context;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 
@@ -23,6 +26,7 @@ public class ProblemRepo {
     public void insertProbs(Problem... problems) {
         //new InsertAsyncTask(problemDao).execute(problems);
         problemDao.insertProb(problems);
+        Log.d(TAG, "insertProbs: " + problems);
     }
 
     public void updateProbs(Problem... problems) {

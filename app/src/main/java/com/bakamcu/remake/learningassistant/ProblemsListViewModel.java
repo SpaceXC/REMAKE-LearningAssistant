@@ -18,7 +18,7 @@ public class ProblemsListViewModel extends AndroidViewModel {
         problemRepo = new ProblemRepo(application);
     }
 
-    LiveData<List<Problem>> getAllProblemssLive() {
+    LiveData<List<Problem>> getAllProblemsLive() {
         return problemRepo.getAllProbLive();
     }
     LiveData<List<Problem>> findProblemWithPattern(String pattern) {

@@ -26,6 +26,6 @@ public interface ProblemDao {
     @Query("SELECT * FROM PROBLEM ORDER BY ID DESC")
     LiveData<List<Problem>> getAllProbLive();
 
-    @Query("SELECT * FROM PROBLEM WHERE probSRC LIKE :pattern ORDER BY ID DESC")
+    @Query("SELECT * FROM PROBLEM WHERE problemSource LIKE :pattern ORDER BY ID DESC")
     LiveData<List<Problem>>findProblemsWithPattern(String pattern);
 }

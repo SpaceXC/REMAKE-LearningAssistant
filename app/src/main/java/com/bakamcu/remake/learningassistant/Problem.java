@@ -11,26 +11,42 @@ public class Problem implements Serializable {
     @PrimaryKey(autoGenerate = true)
     private int id;
 
-    String probSRC = "";
-    String probDesc = "";
-    String probWrongAns = "";
-    String probCorrAns = "";
-    String probImgPath = "";
-    String wrongAnsImgPath = "";
-    String corrImgPath = "";
+    String subject = "";
+    String problemSource = "";
+    String problem = "";
+    String wrongAnswer = "";
+    String correctAnswer = "";
+    String problemImgPath = "";
+    String wrongAnswerImgPath = "";
+    String correctImgPath = "";
     String reason = "";
+    long addTime = 0;
     boolean corrAnsInvisible = false;
     float probRate = 0;
 
-    public Problem(String probSRC, String probDesc, String probWrongAns, String probCorrAns, String probImgPath, String wrongAnsImgPath, String corrImgPath, String reason, float probRate) {
-        this.probSRC = probSRC;
-        this.probDesc = probDesc;
-        this.probWrongAns = probWrongAns;
-        this.probCorrAns = probCorrAns;
-        this.probImgPath = probImgPath;
-        this.wrongAnsImgPath = wrongAnsImgPath;
-        this.corrImgPath = corrImgPath;
+    public Problem(String subject, String problemSource, String problem, String wrongAnswer, String correctAnswer, String problemImgPath, String wrongAnswerImgPath, String correctImgPath, String reason, long addTime, boolean corrAnsInvisible, float probRate) {
+        this.subject = subject;
+
+        this.problemSource = problemSource;
+
+        this.problem = problem;
+
+        this.wrongAnswer = wrongAnswer;
+
+        this.correctAnswer = correctAnswer;
+
+        this.problemImgPath = problemImgPath;
+
+        this.wrongAnswerImgPath = wrongAnswerImgPath;
+
+        this.correctImgPath = correctImgPath;
+
         this.reason = reason;
+
+        this.addTime = addTime;
+
+        this.corrAnsInvisible = corrAnsInvisible;
+
         this.probRate = probRate;
     }
 
@@ -42,60 +58,61 @@ public class Problem implements Serializable {
         this.id = id;
     }
 
-    public String getProbSRC() {
-        return probSRC;
+    public String getSubject() {
+        return subject;
     }
 
-    public void setProbSRC(String probSRC) {
-        this.probSRC = probSRC;
+    public void setSubject(String subject) {
+        this.subject = subject;
     }
 
-    public String getProbDesc() {
-        return probDesc;
+
+    public String getProblem() {
+        return problem;
     }
 
-    public void setProbDesc(String probDesc) {
-        this.probDesc = probDesc;
+    public void setProblem(String problem) {
+        this.problem = problem;
     }
 
-    public String getProbWrongAns() {
-        return probWrongAns;
+    public String getWrongAnswer() {
+        return wrongAnswer;
     }
 
-    public void setProbWrongAns(String probWrongAns) {
-        this.probWrongAns = probWrongAns;
+    public void setWrongAnswer(String wrongAnswer) {
+        this.wrongAnswer = wrongAnswer;
     }
 
-    public String getProbCorrAns() {
-        return probCorrAns;
+    public String getCorrectAnswer() {
+        return correctAnswer;
     }
 
-    public void setProbCorrAns(String probCorrAns) {
-        this.probCorrAns = probCorrAns;
+    public void setCorrectAnswer(String correctAnswer) {
+        this.correctAnswer = correctAnswer;
     }
 
-    public String getProbImgPath() {
-        return probImgPath;
+    public String getProblemImgPath() {
+        return problemImgPath;
     }
 
-    public void setProbImgPath(String probImgPath) {
-        this.probImgPath = probImgPath;
+    public void setProblemImgPath(String problemImgPath) {
+        this.problemImgPath = problemImgPath;
     }
 
-    public String getWrongAnsImgPath() {
-        return wrongAnsImgPath;
+    public String getWrongAnswerImgPath() {
+        return wrongAnswerImgPath;
     }
 
-    public void setWrongAnsImgPath(String wrongAnsImgPath) {
-        this.wrongAnsImgPath = wrongAnsImgPath;
+    public void setWrongAnswerImgPath(String wrongAnswerImgPath) {
+        this.wrongAnswerImgPath = wrongAnswerImgPath;
     }
 
-    public String getCorrImgPath() {
-        return corrImgPath;
+    public String getCorrectImgPath() {
+        return correctImgPath;
     }
 
-    public void setCorrImgPath(String corrImgPath) {
-        this.corrImgPath = corrImgPath;
+    public void setCorrectImgPath(String correctImgPath) {
+        this.correctImgPath = correctImgPath;
     }
 
     public String getReason() {
@@ -106,6 +123,14 @@ public class Problem implements Serializable {
         this.reason = reason;
     }
 
+    public boolean isCorrAnsInvisible() {
+        return corrAnsInvisible;
+    }
+
+    public void setCorrAnsInvisible(boolean corrAnsInvisible) {
+        this.corrAnsInvisible = corrAnsInvisible;
+    }
+
     public float getProbRate() {
         return probRate;
     }
@@ -114,11 +139,15 @@ public class Problem implements Serializable {
         this.probRate = probRate;
     }
 
-    public boolean isCorrAnsInvisible() {
-        return corrAnsInvisible;
+    public String getProblemSource() {
+        return problemSource;
     }
 
-    public void setCorrAnsInvisible(boolean corrAnsInvisible) {
-        this.corrAnsInvisible = corrAnsInvisible;
+    public long getAddTime() {
+        return addTime;
+    }
+
+    public void setAddTime(long addTime) {
+        this.addTime = addTime;
     }
 }
