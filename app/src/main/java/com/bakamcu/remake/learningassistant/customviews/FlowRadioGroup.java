@@ -117,8 +117,5 @@ public class FlowRadioGroup extends RadioGroup {
             preLeft += params.leftMargin + child.getMeasuredWidth() + params.rightMargin;
 
         }
-
     }
-
-
 }
