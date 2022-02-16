@@ -1,8 +1,10 @@
 package com.bakamcu.remake.learningassistant;
 
+import static com.bakamcu.remake.learningassistant.AddProblem.TAG;
+
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,16 +16,11 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 public class ProblemListAdapter extends ListAdapter<Problem, ProblemListAdapter.ProblemViewHolder> {
-    private List<Problem> allProbList = new ArrayList<>();
 
-    private Context context;
-
-    public ProblemListAdapter(Context context) {
+    public ProblemListAdapter() {
         super(new DiffUtil.ItemCallback<Problem>() {
             @Override
             public boolean areItemsTheSame(@NonNull Problem oldItem, @NonNull Problem newItem) {
@@ -35,7 +32,6 @@ public class ProblemListAdapter extends ListAdapter<Problem, ProblemListAdapter.
                 return (oldItem.getProblemSource().equals(newItem.getProblemSource()));
             }
         });
-        this.context = context;
     }
 
     @NonNull
@@ -54,13 +50,16 @@ public class ProblemListAdapter extends ListAdapter<Problem, ProblemListAdapter.
         SimpleDateFormat format = new SimpleDateFormat("yyyy年MM月dd日");
         String updateTime = format.format(new Date(getItem(position).addTime));
         holder.addTime.setText(getItem(position).subject + "," + updateTime + "入库");
-        if(getItem(position).probRate == 1f){
+        Log.d(TAG, "onBindViewHolder rating  " + getItem(position).problemSource + ":   " + getItem(position).probRate);
+        if (getItem(position).probRate == 5) {
             holder.ratingPercent.setText("已完全掌握");
-            holder.problemSource.setTextColor(Color.parseColor("#00FF24"));
-        }else{
-            if(getItem(position).probRate == 0f){
+            holder.problemSource.setTextColor(Color.parseColor("#6DFF00"));
+        } else {
+            if (getItem(position).probRate == 0f) {
                 holder.ratingPercent.setText("完全不懂");
                 holder.problemSource.setTextColor(Color.parseColor("#FF2F00"));
+            } else {
+                holder.ratingPercent.setText("掌握了" + getItem(position).probRate * 20 + "%");
             }
         }
     }

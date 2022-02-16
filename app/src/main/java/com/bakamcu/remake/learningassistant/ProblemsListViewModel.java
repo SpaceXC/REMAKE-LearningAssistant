@@ -6,9 +6,6 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.bakamcu.remake.learningassistant.Problem;
-import com.bakamcu.remake.learningassistant.ProblemRepo;
-
 import java.util.List;
 
 public class ProblemsListViewModel extends AndroidViewModel {
