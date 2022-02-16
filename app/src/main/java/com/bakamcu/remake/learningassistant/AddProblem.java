@@ -129,11 +129,11 @@ public class AddProblem extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 if (ways[which].equals("拍照")) {
                     Log.d(TAG, "onClick: 打开相机");
-                    Toast.makeText(AddProblem.this, "还没做！期待一下吧", Toast.LENGTH_SHORT);
+                    Toast.makeText(AddProblem.this, "还没做！期待一下吧", Toast.LENGTH_SHORT).show();
                     //checkPermissionAndCamera();
                 } else {
                     Log.d(TAG, "onClick: 打开相册");
-                    Toast.makeText(AddProblem.this, "还没做！期待一下吧", Toast.LENGTH_SHORT);
+                    Toast.makeText(AddProblem.this, "还没做！期待一下吧", Toast.LENGTH_SHORT).show();
                 }
             }
         });
