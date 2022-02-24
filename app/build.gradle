@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId "com.bakamcu.remake.learningassistant"
-        minSdk 21
+        minSdk 25
         targetSdk 32
         versionCode 1
         versionName "1.0"
@@ -28,6 +28,7 @@ android {
 
     buildFeatures {
         dataBinding true
+        viewBinding true
     }
 }
 
@@ -38,6 +39,8 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.3.1'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1'
+    implementation 'com.github.yalantis:ucrop:2.2.6-native'
+    implementation 'androidx.annotation:annotation:1.2.0'
     def nav_version = "2.4.1"
     implementation "androidx.navigation:navigation-fragment:$nav_version"
     implementation "androidx.navigation:navigation-ui:$nav_version"
@@ -59,4 +62,5 @@ dependencies {
     implementation "androidx.activity:activity:$activity_version"
     def fragment_version = "1.4.1"
     implementation "androidx.fragment:fragment:$fragment_version"
+
 }

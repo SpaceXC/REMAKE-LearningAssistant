@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -84,6 +85,10 @@ public class ProblemList extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.clearData:
+                if (adapter.getItemCount() == 0) {
+                    Toast.makeText(getContext(), "列表中没有数据", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
                 AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
                 builder.setTitle("清空数据");
                 builder.setMessage("您确定要清空全部吗？");
