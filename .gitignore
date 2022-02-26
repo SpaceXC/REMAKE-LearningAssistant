@@ -13,3 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+/app/release/app-release.apk
+/.idea/dbnavigator.xml
+/.idea/other.xmle
+/app/release/output-metadata.json

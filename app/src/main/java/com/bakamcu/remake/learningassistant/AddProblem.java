@@ -1,46 +1,26 @@
 package com.bakamcu.remake.learningassistant;
 
-import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.Dialog;
-import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Camera;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.LinearLayout;
 import android.widget.RadioButton;
-import android.widget.Switch;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
-import androidx.core.os.EnvironmentCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -50,16 +30,11 @@ import com.yalantis.ucrop.UCrop;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.time.temporal.TemporalAccessor;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
 import java.util.Objects;
 
 import cn.leancloud.LCFile;
-import cn.leancloud.ops.Utils;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
@@ -107,7 +82,7 @@ public class AddProblem extends AppCompatActivity {
      * 处理权限申请的回调。
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSION_CAMERA_REQUEST_CODE) {
             if (grantResults.length > 0
@@ -184,17 +159,14 @@ public class AddProblem extends AppCompatActivity {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(AddProblem.this);
 
-        builder.setItems(ways, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (ways[which].equals("拍照")) {
-                    Log.d(TAG, "onClick: 打开相机");
-                    checkPermissionAndCamera();
-                } else {
-                    Log.d(TAG, "onClick: 打开相册");
-                    ChooseFromGallery();
-                    //Toast.makeText(AddProblem.this, "还没做！期待一下吧", Toast.LENGTH_SHORT).show();
-                }
+        builder.setItems(ways, (dialog, which) -> {
+            if (ways[which].equals("拍照")) {
+                Log.d(TAG, "onClick: 打开相机");
+                checkPermissionAndCamera();
+            } else {
+                Log.d(TAG, "onClick: 打开相册");
+                ChooseFromGallery();
+                //Toast.makeText(AddProblem.this, "还没做！期待一下吧", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -209,6 +181,7 @@ public class AddProblem extends AppCompatActivity {
         startActivityForResult(intent, REQUEST_GALLERY);
     }
 
+    @SuppressLint("QueryPermissionsNeeded")
     void TakePhoto() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
@@ -216,7 +189,7 @@ public class AddProblem extends AppCompatActivity {
             // Create the File where the photo should go
             File photoFile = null;
             try {
-                photoFile = createImageFile(false);
+                photoFile = createImageFile();
             } catch (IOException ex) {
                 // Error occurred while creating the File
                 //...
@@ -233,16 +206,11 @@ public class AddProblem extends AppCompatActivity {
         }
     }
 
-    private File createImageFile(boolean isCropping) throws IOException {
+    private File createImageFile() throws IOException {
         // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "";
-        if (!isCropping) {
-            imageFileName = "orig" + timeStamp + "_";
-        } else {
-            imageFileName = "crop" + timeStamp + "_";
-
-        }
+        @SuppressLint("SimpleDateFormat") String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName;
+        imageFileName = "orig" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
@@ -262,7 +230,6 @@ public class AddProblem extends AppCompatActivity {
         switch (requestCode) {
             case REQUEST_TAKE_PHOTO:
                 Log.d(TAG, "onActivityResult: REQUEST_TAKE_PHOTO");
-                File cropFile = null;
 
                 if (resultCode == RESULT_OK) {
                     Uri destinationUri = Uri.fromFile(new File(getExternalFilesDir("image"), System.currentTimeMillis() + "-croped.png"));
@@ -274,6 +241,7 @@ public class AddProblem extends AppCompatActivity {
             case REQUEST_GALLERY:
                 Log.d(TAG, "onActivityResult: REQUEST_GALLERY");
                 if (resultCode == RESULT_OK) {
+                    assert data != null;
                     Uri uri = data.getData();
                     Uri destinationUri = Uri.fromFile(new File(getExternalFilesDir("image"), System.currentTimeMillis() + "-croped.png"));
                     UCrop.of(uri, destinationUri).start(AddProblem.this);
@@ -283,18 +251,22 @@ public class AddProblem extends AppCompatActivity {
             case UCrop.REQUEST_CROP:
                 Log.d(TAG, "onActivityResult: REQUEST_CROP");
                 if (resultCode == RESULT_OK) {
+                    assert data != null;
                     Uri cropResultUri = UCrop.getOutput(data);
                     switch (currentPhotoType) {
                         case PROBLEM:
                             binding.problemPicture.setImageURI(cropResultUri);
+                            assert cropResultUri != null;
                             UploadPictureToLC(cropResultUri.getPath());
                             break;
                         case WRONG_ANSWER:
                             binding.wrongAnswerPicture.setImageURI(cropResultUri);
+                            assert cropResultUri != null;
                             UploadPictureToLC(cropResultUri.getPath());
                             break;
                         case CORRECT_ANSWER:
                             binding.correctAnswerPicture.setImageURI(cropResultUri);
+                            assert cropResultUri != null;
                             UploadPictureToLC(cropResultUri.getPath());
                             break;
                     }
@@ -303,18 +275,6 @@ public class AddProblem extends AppCompatActivity {
             case UCrop.RESULT_ERROR:
                 break;
         }
-    }
-
-    Uri GetImageUriFromGallery(Uri uri) {
-        String[] filePathColumn = {MediaStore.Images.Media.DATA};
-        Cursor cursor = getContentResolver().query(uri,
-                filePathColumn, null, null, null);//从系统表中查询指定Uri对应的照片
-        cursor.moveToFirst();
-        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-        String path = cursor.getString(columnIndex);  //获取照片路径
-        cursor.close();
-        File pathFile = new File(path);
-        return Uri.fromFile(pathFile);
     }
 
     //-------------------图片相关结束------------------
@@ -329,6 +289,7 @@ public class AddProblem extends AppCompatActivity {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        assert file != null;
         file.saveInBackground().subscribe(new Observer<LCFile>() {
             public void onSubscribe(Disposable disposable) {
             }
