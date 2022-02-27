@@ -8,6 +8,11 @@
         app:actionViewClass="android.widget.SearchView"
         app:showAsAction="always" />
     <item
+        android:id="@+id/logout"
+        android:icon="@drawable/ic_baseline_exit_to_app_24"
+        android:title="登出"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/clearData"
         android:icon="@drawable/ic_baseline_delete_24"
         android:title="清空"

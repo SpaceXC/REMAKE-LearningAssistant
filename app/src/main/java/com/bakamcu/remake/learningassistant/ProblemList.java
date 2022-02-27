@@ -37,6 +37,8 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
+import cn.leancloud.LCUser;
+
 
 public class ProblemList extends Fragment {
 
@@ -107,7 +109,27 @@ public class ProblemList extends Fragment {
                 builder.create();
                 builder.show();
                 break;
+            case R.id.logout:
+                AlertDialog.Builder logoutDialogBuilder = new AlertDialog.Builder(requireActivity());
+                logoutDialogBuilder.setTitle("登出账号");
+                logoutDialogBuilder.setMessage("您确定要登出账号吗？");
+                logoutDialogBuilder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        startActivity(new Intent(getContext(), LoginActivity.class));
+                        LCUser.logOut();
+                        requireActivity().finish();
+                    }
+                });
+                logoutDialogBuilder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
 
+                    }
+                });
+                logoutDialogBuilder.create();
+                logoutDialogBuilder.show();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }

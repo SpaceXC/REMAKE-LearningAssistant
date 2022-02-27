@@ -154,6 +154,10 @@ public class AddProblem extends AppCompatActivity {
         finish();
     }
 
+    public void BuildLeancloudObject(Problem problem) {
+
+    }
+
     private void SetupDialogue() {
         final String[] ways = new String[]{"拍照", "从相册选择"};
 
