@@ -36,7 +36,6 @@ public class LoginActivity extends AppCompatActivity {
         login.setOnClickListener(view -> Login());
         register.setOnClickListener(view -> startActivity(new Intent(LoginActivity.this, RegisterActivity.class)));
     }
-
     void Login() {
         AlertDialog alertDialog = LoadingDialog();
         if (TextUtils.isEmpty(username.getText()) || TextUtils.isEmpty(password.getText())) {
@@ -65,63 +64,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
-
-/*
-    void Register() {
-        AlertDialog alertDialog = LoadingDialog();
-        if (TextUtils.isEmpty(username.getText()) || TextUtils.isEmpty(password.getText())) {
-            Toast.makeText(LoginActivity.this, "用户名或密码为空", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        LCUser user = new LCUser();
-        user.setUsername(username.getText().toString().trim());
-        user.setPassword(password.getText().toString().trim());
-        user.signUpInBackground().subscribe(new Observer<LCUser>() {
-            @Override
-            public void onSubscribe(Disposable d) {
-
-            }
-
-            @Override
-            public void onNext(LCUser lcUser) {
-                LCUser.logIn(username.getText().toString().trim(), password.getText().toString().trim()).subscribe(new Observer<LCUser>() {
-                    public void onSubscribe(Disposable disposable) {
-                    }
-
-                    public void onNext(LCUser user) {
-                        // 登录成功
-                        Toast.makeText(LoginActivity.this, "登录成功", Toast.LENGTH_SHORT).show();
-                        alertDialog.dismiss();
-                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                        finish();
-                    }
-
-                    public void onError(Throwable throwable) {
-                        // 登录失败（可能是密码错误）
-                        Toast.makeText(LoginActivity.this, throwable.getMessage(), Toast.LENGTH_SHORT).show();
-                        alertDialog.dismiss();
-                    }
-
-                    public void onComplete() {
-                    }
-                });
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Toast.makeText(LoginActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                alertDialog.dismiss();
-            }
-
-            @Override
-            public void onComplete() {
-
-            }
-        });
-    }
-*/
-
     public AlertDialog LoadingDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View dialogView = View.inflate(this, R.layout.loading_dialog, null);

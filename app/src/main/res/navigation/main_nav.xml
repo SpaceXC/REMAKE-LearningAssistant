@@ -10,4 +10,9 @@
         android:name="com.bakamcu.remake.learningassistant.ProblemList"
         android:label="错题库"
         tools:layout="@layout/problem_list_fragment" />
+    <fragment
+        android:id="@+id/profile"
+        android:name="com.bakamcu.remake.learningassistant.ProfileFragment"
+        android:label="我的"
+        tools:layout="@layout/fragment_profile" />
 </navigation>

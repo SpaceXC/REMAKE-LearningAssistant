@@ -35,6 +35,8 @@ import java.util.Date;
 import java.util.Objects;
 
 import cn.leancloud.LCFile;
+import cn.leancloud.LCObject;
+import cn.leancloud.LCUser;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
@@ -119,6 +121,8 @@ public class AddProblem extends AppCompatActivity {
                 return;
             }
             String subject = subjectButton.getText().toString();
+            binding.submit.setEnabled(false);
+            AlertDialog alertDialog = LoadingDialog();
             Problem problem = new Problem(subject,
                     binding.problemSrc.getText().toString().trim(),
                     Objects.requireNonNull(binding.problem.getText()).toString().trim(),
@@ -131,7 +135,31 @@ public class AddProblem extends AppCompatActivity {
                     System.currentTimeMillis(),
                     false,
                     binding.ratingBar2.getRating());
-            AddProblemToDB(problem);
+            LCObject problemLC = BuildLeancloudObject(problem);
+            problemLC.saveInBackground().subscribe(new Observer<LCObject>() {
+                @Override
+                public void onSubscribe(Disposable d) {
+
+                }
+
+                @Override
+                public void onNext(LCObject lcObject) {
+                    alertDialog.dismiss();
+                    AddProblemToDB(problem);
+                }
+
+                @Override
+                public void onError(Throwable e) {
+                    alertDialog.dismiss();
+                    Toast.makeText(AddProblem.this, "添加失败！原因：" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onComplete() {
+
+                }
+            });
+
         });
 
         binding.problemPhoto.setOnClickListener(view -> {
@@ -154,8 +182,20 @@ public class AddProblem extends AppCompatActivity {
         finish();
     }
 
-    public void BuildLeancloudObject(Problem problem) {
-
+    public LCObject BuildLeancloudObject(Problem problem) {
+        LCObject problemLC = new LCObject("Problems");
+        problemLC.put("subject", problem.subject);
+        problemLC.put("problemSource", problem.problemSource);
+        problemLC.put("problem", problem.problem);
+        problemLC.put("problemImagePath", problem.getProblemImgPath());
+        problemLC.put("wrongAnswer", problem.wrongAnswer);
+        problemLC.put("wrongAnswerImagePath", problem.getWrongAnswerImgPath());
+        problemLC.put("correctAnswer", problem.correctAnswer);
+        problemLC.put("correctAnswerImagePath", problem.getCorrectImgPath());
+        problemLC.put("reason", problem.reason);
+        problemLC.put("rating", problem.probRate);
+        problemLC.put("user", LCUser.getCurrentUser());
+        return problemLC;
     }
 
     private void SetupDialogue() {
@@ -219,7 +259,7 @@ public class AddProblem extends AppCompatActivity {
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
                 ".png",         /* suffix */
-                storageDir      /* directory */
+                storageDir       /* directory */
         );
 
         // Save a file: path for use with ACTION_VIEW intents
