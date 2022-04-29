@@ -55,6 +55,7 @@ public class AddProblem extends AppCompatActivity {
     String wrongAnswerImagePath = "";
     String correctAnswerImagePath = "";
     ProblemsListViewModel viewModel;
+    //LiveQueryViewModel viewModelLiveQuery = new LiveQueryViewModel(getApplication());
     static final int REQUEST_TAKE_PHOTO = 1;
     static final int REQUEST_GALLERY = 2;
     String currentPhotoPath;
@@ -107,6 +108,7 @@ public class AddProblem extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_add_problem);  //DataBinding加载视图
         viewModel = new ViewModelProvider(this).get(ProblemsListViewModel.class);
+        //viewModelLiveQuery = new ViewModelProvider(this).get(LiveQueryViewModel.class);
 
 
         //----------------------------UI交互监听设置区域----------------------------
@@ -152,6 +154,7 @@ public class AddProblem extends AppCompatActivity {
                 public void onError(Throwable e) {
                     alertDialog.dismiss();
                     Toast.makeText(AddProblem.this, "添加失败！原因：" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    binding.submit.setEnabled(true);
                 }
 
                 @Override

@@ -2,7 +2,7 @@ package com.bakamcu.remake.learningassistant;
 
 import static com.bakamcu.remake.learningassistant.AddProblem.TAG;
 
-import android.content.ClipData;
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
@@ -44,11 +44,13 @@ public class ProblemList extends Fragment {
 
     ProblemListAdapter adapter;
     SwipeRefreshLayout swipeRefreshLayout;
+    LiveData<List<Problem>> LCproblemList;
     LiveData<List<Problem>> problemList;
     RecyclerView recyclerView;
     private ProblemsListViewModel viewModel;
     private List<Problem> allProblems;
     private boolean undoAction;
+
 
     public ProblemList() {
         setHasOptionsMenu(true);
@@ -83,6 +85,7 @@ public class ProblemList extends Fragment {
         });
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -151,7 +154,8 @@ public class ProblemList extends Fragment {
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        problemList = viewModel.getAllProblemsLive();
+        LCproblemList = viewModel.getAllProblemsLive();
+        problemList = viewModel.getProblemsWithQuery("", "");
         problemList.observe(requireActivity(), problems -> {
             int temp = adapter.getItemCount();
             allProblems = problems;
@@ -238,7 +242,7 @@ public class ProblemList extends Fragment {
 
     public void RefreshList() {
         Log.d(TAG, "RefreshList: ");
-        adapter.submitList(viewModel.getAllProblemsLive().getValue());
+        problemList = viewModel.getProblemsWithQuery("", "");
         recyclerView.scrollToPosition(0);
         swipeRefreshLayout.setRefreshing(false);
     }
