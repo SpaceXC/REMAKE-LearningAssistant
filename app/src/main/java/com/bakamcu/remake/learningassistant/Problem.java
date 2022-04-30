@@ -19,11 +19,13 @@ public class Problem implements Serializable {
     String wrongAnswerImgPath;
     String correctImgPath;
     String reason;
-    String addTime;
+    String updateTimeString;
+    String updateTimeStamp;
     boolean corrAnsInvisible;
     String probRate = "0";
+    String problemID;
 
-    public Problem(String subject, String problemSource, String problem, String wrongAnswer, String correctAnswer, String problemImgPath, String wrongAnswerImgPath, String correctImgPath, String reason, String addTime, boolean corrAnsInvisible, String probRate) {
+    public Problem(String subject, String problemSource, String problem, String wrongAnswer, String correctAnswer, String problemImgPath, String wrongAnswerImgPath, String correctImgPath, String reason, String updateTimeString, String updateTimeStamp, boolean corrAnsInvisible, String probRate) {
         this.subject = subject;
 
         this.problemSource = problemSource;
@@ -42,7 +44,9 @@ public class Problem implements Serializable {
 
         this.reason = reason;
 
-        this.addTime = addTime;
+        this.updateTimeString = updateTimeString;
+
+        this.updateTimeStamp = updateTimeStamp;
 
         this.corrAnsInvisible = corrAnsInvisible;
 
@@ -60,7 +64,6 @@ public class Problem implements Serializable {
     public String getSubject() {
         return subject;
     }
-
 
     public String getProblem() {
         return problem;
@@ -106,8 +109,15 @@ public class Problem implements Serializable {
         return problemSource;
     }
 
-    public String getAddTime() {
-        return addTime;
+    public String getUpdateTimeString() {
+        return updateTimeString;
     }
 
+    public String getProblemID() {
+        return problemID;
+    }
+
+    public void setProblemID(String problemID) {
+        this.problemID = problemID;
+    }
 }

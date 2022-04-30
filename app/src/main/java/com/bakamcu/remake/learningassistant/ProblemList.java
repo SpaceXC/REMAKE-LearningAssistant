@@ -37,7 +37,11 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.leancloud.LCObject;
 import cn.leancloud.LCUser;
+import cn.leancloud.types.LCNull;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 
 
 public class ProblemList extends Fragment {
@@ -49,7 +53,7 @@ public class ProblemList extends Fragment {
     private ProblemsListViewModel viewModel;
     private List<Problem> allProblems = new ArrayList<>();
     private boolean undoAction;
-
+    LinearLayoutManager recyclerViewManager;
 
     public ProblemList() {
         setHasOptionsMenu(true);
@@ -128,11 +132,13 @@ public class ProblemList extends Fragment {
         recyclerView = requireView().findViewById(R.id.recyclerView);
         adapter = new ProblemListAdapter(getActivity());
         recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerViewManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(recyclerViewManager);
 
         swipeRefreshLayout = requireView().findViewById(R.id.swipeRefreshLayout);
         swipeRefreshLayout.setOnRefreshListener(() -> {
             RefreshList("", "");
+            recyclerView.smoothScrollToPosition(0);
         });
         //problemList.setValue(viewModel.getProblemsWithQuery("", ""));
         //RefreshList();
@@ -168,14 +174,68 @@ public class ProblemList extends Fragment {
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                AlertDialog alertDialog = LoadingDialog();
+                alertDialog.show();
                 final Problem problemToDelete = allProblems.get(viewHolder.getAdapterPosition());
                 viewModel.deleteProbs(problemToDelete);
-                Snackbar.make(requireActivity().findViewById(R.id.constraintLayout), "您删除了：" + problemToDelete.getProblemSource(), Snackbar.LENGTH_LONG)
-                        .setAction("撤销", v -> {
-                            undoAction = true;
-                            viewModel.insertProbs(problemToDelete);
-                        })
-                        .show();
+                //deleteProb(problemToDelete.problemID);
+                LCObject problem = LCObject.createWithoutData("Problems", problemToDelete.problemID);
+                problem.deleteInBackground().subscribe(new Observer<LCNull>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                    }
+
+                    @Override
+                    public void onNext(LCNull response) {
+                        RefreshList("", "");
+                        recyclerView.smoothScrollToPosition(0);
+                        alertDialog.dismiss();
+                        Snackbar.make(requireActivity().findViewById(R.id.constraintLayout), "您删除了：" + problemToDelete.getProblemSource(), Snackbar.LENGTH_LONG)
+                                .setAction("撤销", v -> {
+                                    undoAction = true;
+                                    //viewModel.insertProbs(problemToDelete);
+                                    alertDialog.show();
+                                    LCObject problemLC = viewModel.BuildLeancloudObject(problemToDelete);
+                                    problemLC.saveInBackground().subscribe(new Observer<LCObject>() {
+                                        @Override
+                                        public void onSubscribe(Disposable d) {
+
+                                        }
+
+                                        @Override
+                                        public void onNext(LCObject lcObject) {
+                                            alertDialog.dismiss();
+                                            problemToDelete.setProblemID(lcObject.getObjectId());
+                                            RefreshList("", "");
+                                            recyclerView.smoothScrollToPosition(0);
+                                        }
+
+                                        @Override
+                                        public void onError(Throwable e) {
+                                            alertDialog.dismiss();
+                                            Toast.makeText(requireActivity(), "撤销失败！原因：" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        }
+
+                                        @Override
+                                        public void onComplete() {
+
+                                        }
+                                    });
+
+                                })
+                                .show();
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        System.out.println("failed to delete a todo: " + e.getMessage());
+                    }
+
+                    @Override
+                    public void onComplete() {
+                    }
+                });
+
 
             }
 
@@ -225,13 +285,29 @@ public class ProblemList extends Fragment {
         Log.d(TAG, "onResume: ProblemList");
         swipeRefreshLayout.setRefreshing(true);
         RefreshList("", "");
+        recyclerView.smoothScrollToPosition(0);
     }
 
     public void RefreshList(String queryName, String query) {
         List<Problem> tempList = viewModel.getAllProblems(queryName, query, problemList);
         //Log.d(TAG, "RefreshList: list count " + tempList.size());
         //problemList.setValue(tempList);
-        recyclerView.scrollToPosition(0);
+        recyclerView.smoothScrollToPosition(0);
         swipeRefreshLayout.setRefreshing(false);
+    }
+
+    public void deleteProb(String objectID) {
+
+    }
+
+    public AlertDialog LoadingDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+        View dialogView = View.inflate(requireActivity(), R.layout.loading_dialog, null);
+        builder.setView(dialogView);
+        AlertDialog alertDialog = builder.create();
+        alertDialog.setCancelable(false);
+        alertDialog.setCanceledOnTouchOutside(false);
+        alertDialog.show();
+        return alertDialog;
     }
 }
