@@ -22,7 +22,7 @@ public class ProblemListAdapter extends ListAdapter<Problem, ProblemListAdapter.
         super(new DiffUtil.ItemCallback<Problem>() {
             @Override
             public boolean areItemsTheSame(@NonNull Problem oldItem, @NonNull Problem newItem) {
-                return oldItem.getId() == newItem.getId();
+                return oldItem.getProblemID() == newItem.getProblemID();
             }
 
             @Override

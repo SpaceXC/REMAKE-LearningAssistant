@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="query_names">
+        <item>错题来源</item>
+        <item>科目名称</item>
+        <item>入库时间</item>
+        <item>题目详情</item>
+        <item>错误答案</item>
+        <item>正确答案</item>
+        <item>错误原因</item>
+    </string-array>
+</resources>

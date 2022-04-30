@@ -10,6 +10,8 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -17,6 +19,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -33,6 +37,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +59,10 @@ public class ProblemList extends Fragment {
     private List<Problem> allProblems = new ArrayList<>();
     private boolean undoAction;
     LinearLayoutManager recyclerViewManager;
+    String queryName = "";
+    Spinner spinnerQueryName;
+    TextInputEditText searchText;
+    String query = "";
 
     public ProblemList() {
         setHasOptionsMenu(true);
@@ -130,6 +139,59 @@ public class ProblemList extends Fragment {
         viewModel = new ViewModelProvider(this).get(ProblemsListViewModel.class);
         FloatingActionButton addBtn = requireView().findViewById(R.id.addProblem);
         recyclerView = requireView().findViewById(R.id.recyclerView);
+        spinnerQueryName = requireView().findViewById(R.id.spinner);
+        spinnerQueryName.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                switch (spinnerQueryName.getSelectedItem().toString()) {
+                    case "错题来源":
+                        queryName = "problemSource";
+                        break;
+                    case "科目名称":
+                        queryName = "subject";
+                        break;
+                    case "入库时间":
+                        queryName = "addTime";
+                        break;
+                    case "题目详情":
+                        queryName = "problem";
+                        break;
+                    case "错误答案":
+                        queryName = "wrongAnswer";
+                        break;
+                    case "正确答案":
+                        queryName = "correctAnswer";
+                        break;
+                    case "错误原因":
+                        queryName = "reason";
+                        break;
+                }
+                Log.d(TAG, "onItemSelected: " + queryName);
+                RefreshList(queryName, query);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+        searchText = requireView().findViewById(R.id.searchText);
+        searchText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                query = charSequence.toString();
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                RefreshList(queryName, query);
+            }
+        });
         adapter = new ProblemListAdapter(getActivity());
         recyclerView.setAdapter(adapter);
         recyclerViewManager = new LinearLayoutManager(getContext());
@@ -137,18 +199,19 @@ public class ProblemList extends Fragment {
 
         swipeRefreshLayout = requireView().findViewById(R.id.swipeRefreshLayout);
         swipeRefreshLayout.setOnRefreshListener(() -> {
-            RefreshList("", "");
-            recyclerView.smoothScrollToPosition(0);
+            RefreshList(queryName, query);
         });
-        //problemList.setValue(viewModel.getProblemsWithQuery("", ""));
-        //RefreshList();
-        recyclerView.scrollToPosition(0);
         problemList.observe(requireActivity(), problems -> {
             int temp = adapter.getItemCount();
             allProblems = problemList.getValue();
             if (temp != problems.size()) {
                 if (temp < problems.size() && !undoAction) {
-                    recyclerView.smoothScrollToPosition(0);
+                    recyclerView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            recyclerView.smoothScrollToPosition(0);
+                        }
+                    });
                 }
                 undoAction = false;
                 adapter.submitList(problems);
@@ -187,8 +250,7 @@ public class ProblemList extends Fragment {
 
                     @Override
                     public void onNext(LCNull response) {
-                        RefreshList("", "");
-                        recyclerView.smoothScrollToPosition(0);
+                        RefreshList(queryName, query);
                         alertDialog.dismiss();
                         Snackbar.make(requireActivity().findViewById(R.id.constraintLayout), "您删除了：" + problemToDelete.getProblemSource(), Snackbar.LENGTH_LONG)
                                 .setAction("撤销", v -> {
@@ -206,8 +268,7 @@ public class ProblemList extends Fragment {
                                         public void onNext(LCObject lcObject) {
                                             alertDialog.dismiss();
                                             problemToDelete.setProblemID(lcObject.getObjectId());
-                                            RefreshList("", "");
-                                            recyclerView.smoothScrollToPosition(0);
+                                            RefreshList(queryName, query);
                                         }
 
                                         @Override
@@ -283,17 +344,29 @@ public class ProblemList extends Fragment {
     public void onResume() {
         super.onResume();
         Log.d(TAG, "onResume: ProblemList");
-        swipeRefreshLayout.setRefreshing(true);
-        RefreshList("", "");
-        recyclerView.smoothScrollToPosition(0);
+        swipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                swipeRefreshLayout.setRefreshing(true);
+            }
+        });
+        RefreshList(queryName, query);
     }
 
     public void RefreshList(String queryName, String query) {
-        List<Problem> tempList = viewModel.getAllProblems(queryName, query, problemList);
-        //Log.d(TAG, "RefreshList: list count " + tempList.size());
-        //problemList.setValue(tempList);
-        recyclerView.smoothScrollToPosition(0);
-        swipeRefreshLayout.setRefreshing(false);
+        viewModel.getAllProblems(queryName, query, problemList);
+        recyclerView.post(new Runnable() {
+            @Override
+            public void run() {
+                recyclerView.smoothScrollToPosition(0);
+            }
+        });
+        swipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
     }
 
     public void deleteProb(String objectID) {

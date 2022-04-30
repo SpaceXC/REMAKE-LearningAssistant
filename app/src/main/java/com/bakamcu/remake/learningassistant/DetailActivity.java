@@ -1,5 +1,6 @@
 package com.bakamcu.remake.learningassistant;
 
+import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -14,6 +15,7 @@ public class DetailActivity extends AppCompatActivity {
     Problem problem;
     ActivityDetailBinding binding;
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,6 +30,7 @@ public class DetailActivity extends AppCompatActivity {
         binding.correctAnwerText.setText(problem.correctAnswer);
         binding.reasonText.setText(problem.reason);
         binding.ratingBar.setRating(Float.parseFloat(problem.probRate));
+        binding.detailRatingPercentText.setText(Float.parseFloat(problem.probRate) * 20 + "%");
         if (!TextUtils.isEmpty(problem.problemImgPath)) {
             Glide.with(this)
                     .load(Uri.parse(problem.problemImgPath))

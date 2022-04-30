@@ -5,6 +5,7 @@ import static com.bakamcu.remake.learningassistant.AddProblem.TAG;
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -62,7 +63,7 @@ public class ProblemsListViewModel extends AndroidViewModel {
     List<Problem> getAllProblems(String queryName, String query, MutableLiveData<List<Problem>> listObject) {
         LCQuery<LCObject> lcquery = new LCQuery<>("Problems");
         List<Problem> tempList = new ArrayList<>();
-        //lcquery.whereContains(queryName, query);
+        lcquery.whereContains(queryName, query);
         lcquery.whereEqualTo("user", LCUser.getCurrentUser());
         lcquery.findInBackground().subscribe(new Observer<List<LCObject>>() {
             public void onSubscribe(Disposable disposable) {
@@ -96,6 +97,7 @@ public class ProblemsListViewModel extends AndroidViewModel {
             }
 
             public void onError(Throwable throwable) {
+                Toast.makeText(getApplication(), "无法获取数据，原因：" + throwable.getMessage(), Toast.LENGTH_SHORT).show();
             }
 
             public void onComplete() {
