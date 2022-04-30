@@ -18,6 +18,7 @@
         <entry key="app/src/main/res/layout-w1240dp/activity_login.xml" value="0.291796875" />
         <entry key="app/src/main/res/layout-w936dp/activity_login.xml" value="0.285546875" />
         <entry key="app/src/main/res/layout/activity_add_problem.xml" value="0.29471733086190915" />
+        <entry key="app/src/main/res/layout/activity_detail.xml" value="0.27890625" />
         <entry key="app/src/main/res/layout/activity_login.xml" value="0.285546875" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.31970260223048325" />
         <entry key="app/src/main/res/layout/activity_register.xml" value="0.31252672082086363" />
@@ -28,7 +29,7 @@
         <entry key="app/src/main/res/layout/edit_text_dialogue.xml" value="0.25462962962962965" />
         <entry key="app/src/main/res/layout/fragment_profile.xml" value="0.31252672082086363" />
         <entry key="app/src/main/res/layout/loading_dialog.xml" value="0.5320640912979472" />
-        <entry key="app/src/main/res/layout/problem_list_fragment.xml" value="0.17040333467371316" />
+        <entry key="app/src/main/res/layout/problem_list_fragment.xml" value="0.25" />
         <entry key="app/src/main/res/menu/nav_menu.xml" value="0.2864583333333333" />
         <entry key="app/src/main/res/menu/problem_list_action_bar.xml" value="0.285546875" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.1495" />

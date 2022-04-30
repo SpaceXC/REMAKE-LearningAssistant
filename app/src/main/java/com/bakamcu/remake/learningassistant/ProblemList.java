@@ -17,7 +17,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SearchView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -25,7 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -35,6 +34,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import cn.leancloud.LCUser;
@@ -44,11 +44,10 @@ public class ProblemList extends Fragment {
 
     ProblemListAdapter adapter;
     SwipeRefreshLayout swipeRefreshLayout;
-    LiveData<List<Problem>> LCproblemList;
-    LiveData<List<Problem>> problemList;
+    MutableLiveData<List<Problem>> problemList = new MutableLiveData<>();
     RecyclerView recyclerView;
     private ProblemsListViewModel viewModel;
-    private List<Problem> allProblems;
+    private List<Problem> allProblems = new ArrayList<>();
     private boolean undoAction;
 
 
@@ -60,29 +59,6 @@ public class ProblemList extends Fragment {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.problem_list_action_bar, menu);
-        SearchView searchView = (SearchView) menu.findItem(R.id.app_bar_search).getActionView();
-        searchView.setMaxWidth(1000);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                String pattern = newText.trim();
-                problemList.removeObservers(getViewLifecycleOwner());      //先移除之前在onActivityCreated中添加的observer
-                problemList = viewModel.findProblemWithPattern(pattern);
-                problemList.observe(getViewLifecycleOwner(), problems -> {
-                    int temp = adapter.getItemCount();
-                    allProblems = problems;
-                    if (temp != problems.size()) {
-                        adapter.submitList(problems);
-                    }
-                });
-                return true;
-            }
-        });
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -150,15 +126,20 @@ public class ProblemList extends Fragment {
         viewModel = new ViewModelProvider(this).get(ProblemsListViewModel.class);
         FloatingActionButton addBtn = requireView().findViewById(R.id.addProblem);
         recyclerView = requireView().findViewById(R.id.recyclerView);
-        adapter = new ProblemListAdapter();
+        adapter = new ProblemListAdapter(getActivity());
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        LCproblemList = viewModel.getAllProblemsLive();
-        problemList = viewModel.getProblemsWithQuery("", "");
+        swipeRefreshLayout = requireView().findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            RefreshList("", "");
+        });
+        //problemList.setValue(viewModel.getProblemsWithQuery("", ""));
+        //RefreshList();
+        recyclerView.scrollToPosition(0);
         problemList.observe(requireActivity(), problems -> {
             int temp = adapter.getItemCount();
-            allProblems = problems;
+            allProblems = problemList.getValue();
             if (temp != problems.size()) {
                 if (temp < problems.size() && !undoAction) {
                     recyclerView.smoothScrollToPosition(0);
@@ -235,14 +216,21 @@ public class ProblemList extends Fragment {
 
         }).attachToRecyclerView(recyclerView);
 
-        swipeRefreshLayout = requireView().findViewById(R.id.swipeRefreshLayout);
-        swipeRefreshLayout.setOnRefreshListener(this::RefreshList);
+
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume: ProblemList");
+        swipeRefreshLayout.setRefreshing(true);
+        RefreshList("", "");
+    }
 
-    public void RefreshList() {
-        Log.d(TAG, "RefreshList: ");
-        problemList = viewModel.getProblemsWithQuery("", "");
+    public void RefreshList(String queryName, String query) {
+        List<Problem> tempList = viewModel.getAllProblems(queryName, query, problemList);
+        //Log.d(TAG, "RefreshList: list count " + tempList.size());
+        //problemList.setValue(tempList);
         recyclerView.scrollToPosition(0);
         swipeRefreshLayout.setRefreshing(false);
     }

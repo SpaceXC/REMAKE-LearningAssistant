@@ -134,9 +134,9 @@ public class AddProblem extends AppCompatActivity {
                     wrongAnswerImagePath,
                     correctAnswerImagePath,
                     Objects.requireNonNull(binding.reason.getText()).toString().trim(),
-                    System.currentTimeMillis(),
+                    getCurrentTime(),
                     false,
-                    binding.ratingBar2.getRating());
+                    String.valueOf(binding.ratingBar2.getRating()));
             LCObject problemLC = BuildLeancloudObject(problem);
             problemLC.saveInBackground().subscribe(new Observer<LCObject>() {
                 @Override
@@ -196,8 +196,9 @@ public class AddProblem extends AppCompatActivity {
         problemLC.put("correctAnswer", problem.correctAnswer);
         problemLC.put("correctAnswerImagePath", problem.getCorrectImgPath());
         problemLC.put("reason", problem.reason);
-        problemLC.put("rating", problem.probRate);
+        problemLC.put("probRate", problem.probRate);
         problemLC.put("user", LCUser.getCurrentUser());
+        problemLC.put("addTime", getCurrentTime());
         return problemLC;
     }
 
@@ -381,5 +382,12 @@ public class AddProblem extends AppCompatActivity {
         alertDialog.setCanceledOnTouchOutside(false);
         alertDialog.show();
         return alertDialog;
+    }
+
+    public String getCurrentTime() {
+        Date date = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日");
+        System.out.println(dateFormat.format(date));
+        return dateFormat.format(date);
     }
 }

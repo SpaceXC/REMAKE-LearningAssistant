@@ -1,6 +1,9 @@
 package com.bakamcu.remake.learningassistant;
 
+import static com.bakamcu.remake.learningassistant.AddProblem.TAG;
+
 import android.app.Application;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -53,9 +56,9 @@ public class ProblemsListViewModel extends AndroidViewModel {
         problemRepo.deleteAllProbs();
     }
 
-    MutableLiveData<List<Problem>> getProblemsWithQuery(String queryName, String query) {
-        MutableLiveData<List<Problem>> liveTempList = new MutableLiveData<>();
+    List<Problem> getAllProblems(String queryName, String query, MutableLiveData<List<Problem>> listObject) {
         LCQuery<LCObject> lcquery = new LCQuery<>("Problems");
+        List<Problem> tempList = new ArrayList<>();
         //lcquery.whereContains(queryName, query);
         lcquery.whereEqualTo("user", LCUser.getCurrentUser());
         lcquery.findInBackground().subscribe(new Observer<List<LCObject>>() {
@@ -63,7 +66,7 @@ public class ProblemsListViewModel extends AndroidViewModel {
             }
 
             public void onNext(List<LCObject> LCProblems) {
-                List<Problem> tempList = new ArrayList<>();
+
                 for (LCObject object : LCProblems) {
                     Problem temp = new Problem(
                             (String) object.get("subject"),
@@ -75,14 +78,15 @@ public class ProblemsListViewModel extends AndroidViewModel {
                             (String) object.get("wrongAnswerImagePath"),
                             (String) object.get("correctAnswerImagePath"),
                             (String) object.get("reason"),
-                            0,
+                            (String) object.get("addTime"),
                             false,
-                            0.3f
+                            (String) object.get("probRate")
                     );
                     tempList.add(temp);
+                    Log.d(TAG, "onNext: " + tempList.size());
                 }
                 Collections.reverse(tempList);
-                liveTempList.setValue(tempList);
+                listObject.setValue(tempList);
             }
 
             public void onError(Throwable throwable) {
@@ -91,6 +95,8 @@ public class ProblemsListViewModel extends AndroidViewModel {
             public void onComplete() {
             }
         });
-        return liveTempList;
+
+
+        return tempList;
     }
 }

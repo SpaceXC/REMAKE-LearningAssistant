@@ -21,8 +21,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LearningAssistant">
         <activity
+            android:name=".DetailActivity"
+            android:exported="false"
+            android:label="错题详情" />
+        <activity
             android:name=".RegisterActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:label="注册" />
         <activity
             android:name=".SplashScreen"
             android:exported="true"
