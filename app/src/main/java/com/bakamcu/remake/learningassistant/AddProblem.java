@@ -135,9 +135,10 @@ public class AddProblem extends AppCompatActivity {
                     correctAnswerImagePath,
                     Objects.requireNonNull(binding.reason.getText()).toString().trim(),
                     getCurrentTime(),
+                    String.valueOf(System.currentTimeMillis()),
                     false,
                     String.valueOf(binding.ratingBar2.getRating()));
-            LCObject problemLC = BuildLeancloudObject(problem);
+            LCObject problemLC = viewModel.BuildLeancloudObject(problem);
             problemLC.saveInBackground().subscribe(new Observer<LCObject>() {
                 @Override
                 public void onSubscribe(Disposable d) {
@@ -147,6 +148,7 @@ public class AddProblem extends AppCompatActivity {
                 @Override
                 public void onNext(LCObject lcObject) {
                     alertDialog.dismiss();
+                    problem.setProblemID(lcObject.getObjectId());
                     AddProblemToDB(problem);
                 }
 

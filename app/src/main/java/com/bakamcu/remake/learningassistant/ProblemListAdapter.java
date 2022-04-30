@@ -49,7 +49,7 @@ public class ProblemListAdapter extends ListAdapter<Problem, ProblemListAdapter.
     public void onBindViewHolder(@NonNull ProblemViewHolder holder, int position) {
         holder.problemSource.setText(getItem(position).problemSource);
 
-        holder.addTime.setText(getItem(position).subject + "," + getItem(position).getAddTime() + "入库");
+        holder.addTime.setText(getItem(position).subject + "," + getItem(position).getUpdateTimeString() + "入库");
         Log.d(TAG, "onBindViewHolder rating  " + getItem(position).problemSource + ":   " + getItem(position).probRate);
         float probRate = Float.parseFloat(getItem(position).probRate);
         if (probRate == 5) {

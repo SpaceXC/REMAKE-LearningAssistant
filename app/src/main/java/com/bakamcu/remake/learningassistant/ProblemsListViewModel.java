@@ -2,6 +2,7 @@ package com.bakamcu.remake.learningassistant;
 
 import static com.bakamcu.remake.learningassistant.AddProblem.TAG;
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.util.Log;
 
@@ -10,8 +11,10 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import cn.leancloud.LCObject;
@@ -79,13 +82,16 @@ public class ProblemsListViewModel extends AndroidViewModel {
                             (String) object.get("correctAnswerImagePath"),
                             (String) object.get("reason"),
                             (String) object.get("addTime"),
+                            (String) object.get("addTimeStamp"),
                             false,
                             (String) object.get("probRate")
                     );
+                    temp.setProblemID(object.getObjectId());
                     tempList.add(temp);
                     Log.d(TAG, "onNext: " + tempList.size());
                 }
                 Collections.reverse(tempList);
+                //Collections.sort(tempList);
                 listObject.setValue(tempList);
             }
 
@@ -98,5 +104,31 @@ public class ProblemsListViewModel extends AndroidViewModel {
 
 
         return tempList;
+    }
+
+    public LCObject BuildLeancloudObject(Problem problem) {
+        LCObject problemLC = new LCObject("Problems");
+        problemLC.put("subject", problem.subject);
+        problemLC.put("problemSource", problem.problemSource);
+        problemLC.put("problem", problem.problem);
+        problemLC.put("problemImagePath", problem.getProblemImgPath());
+        problemLC.put("wrongAnswer", problem.wrongAnswer);
+        problemLC.put("wrongAnswerImagePath", problem.getWrongAnswerImgPath());
+        problemLC.put("correctAnswer", problem.correctAnswer);
+        problemLC.put("correctAnswerImagePath", problem.getCorrectImgPath());
+        problemLC.put("reason", problem.reason);
+        problemLC.put("probRate", problem.probRate);
+        problemLC.put("user", LCUser.getCurrentUser());
+        problemLC.put("addTime", getCurrentTime());
+        problemLC.put("addTimeStamp", problem.updateTimeStamp);
+        return problemLC;
+    }
+
+    public String getCurrentTime() {
+        Date date = new Date();
+        @SuppressLint("SimpleDateFormat")
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日");
+        System.out.println(dateFormat.format(date));
+        return dateFormat.format(date);
     }
 }
