@@ -2,7 +2,7 @@ package com.bakamcu.remake.learningassistant;
 
 import static com.bakamcu.remake.learningassistant.AddProblem.TAG;
 
-import android.content.ClipData;
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
@@ -17,7 +17,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SearchView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -25,7 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -35,18 +34,22 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import cn.leancloud.LCUser;
 
 
 public class ProblemList extends Fragment {
 
     ProblemListAdapter adapter;
     SwipeRefreshLayout swipeRefreshLayout;
-    LiveData<List<Problem>> problemList;
+    MutableLiveData<List<Problem>> problemList = new MutableLiveData<>();
     RecyclerView recyclerView;
     private ProblemsListViewModel viewModel;
-    private List<Problem> allProblems;
+    private List<Problem> allProblems = new ArrayList<>();
     private boolean undoAction;
+
 
     public ProblemList() {
         setHasOptionsMenu(true);
@@ -56,31 +59,9 @@ public class ProblemList extends Fragment {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.problem_list_action_bar, menu);
-        SearchView searchView = (SearchView) menu.findItem(R.id.app_bar_search).getActionView();
-        searchView.setMaxWidth(1000);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                String pattern = newText.trim();
-                problemList.removeObservers(getViewLifecycleOwner());      //先移除之前在onActivityCreated中添加的observer
-                problemList = viewModel.findProblemWithPattern(pattern);
-                problemList.observe(getViewLifecycleOwner(), problems -> {
-                    int temp = adapter.getItemCount();
-                    allProblems = problems;
-                    if (temp != problems.size()) {
-                        adapter.submitList(problems);
-                    }
-                });
-                return true;
-            }
-        });
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -107,7 +88,27 @@ public class ProblemList extends Fragment {
                 builder.create();
                 builder.show();
                 break;
+            case R.id.logout:
+                AlertDialog.Builder logoutDialogBuilder = new AlertDialog.Builder(requireActivity());
+                logoutDialogBuilder.setTitle("登出账号");
+                logoutDialogBuilder.setMessage("您确定要登出账号吗？");
+                logoutDialogBuilder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        startActivity(new Intent(getContext(), LoginActivity.class));
+                        LCUser.logOut();
+                        requireActivity().finish();
+                    }
+                });
+                logoutDialogBuilder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
 
+                    }
+                });
+                logoutDialogBuilder.create();
+                logoutDialogBuilder.show();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -125,14 +126,20 @@ public class ProblemList extends Fragment {
         viewModel = new ViewModelProvider(this).get(ProblemsListViewModel.class);
         FloatingActionButton addBtn = requireView().findViewById(R.id.addProblem);
         recyclerView = requireView().findViewById(R.id.recyclerView);
-        adapter = new ProblemListAdapter();
+        adapter = new ProblemListAdapter(getActivity());
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        problemList = viewModel.getAllProblemsLive();
+        swipeRefreshLayout = requireView().findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            RefreshList("", "");
+        });
+        //problemList.setValue(viewModel.getProblemsWithQuery("", ""));
+        //RefreshList();
+        recyclerView.scrollToPosition(0);
         problemList.observe(requireActivity(), problems -> {
             int temp = adapter.getItemCount();
-            allProblems = problems;
+            allProblems = problemList.getValue();
             if (temp != problems.size()) {
                 if (temp < problems.size() && !undoAction) {
                     recyclerView.smoothScrollToPosition(0);
@@ -209,14 +216,21 @@ public class ProblemList extends Fragment {
 
         }).attachToRecyclerView(recyclerView);
 
-        swipeRefreshLayout = requireView().findViewById(R.id.swipeRefreshLayout);
-        swipeRefreshLayout.setOnRefreshListener(this::RefreshList);
+
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume: ProblemList");
+        swipeRefreshLayout.setRefreshing(true);
+        RefreshList("", "");
+    }
 
-    public void RefreshList() {
-        Log.d(TAG, "RefreshList: ");
-        adapter.submitList(viewModel.getAllProblemsLive().getValue());
+    public void RefreshList(String queryName, String query) {
+        List<Problem> tempList = viewModel.getAllProblems(queryName, query, problemList);
+        //Log.d(TAG, "RefreshList: list count " + tempList.size());
+        //problemList.setValue(tempList);
         recyclerView.scrollToPosition(0);
         swipeRefreshLayout.setRefreshing(false);
     }

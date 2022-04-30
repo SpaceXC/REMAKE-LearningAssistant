@@ -35,6 +35,8 @@ import java.util.Date;
 import java.util.Objects;
 
 import cn.leancloud.LCFile;
+import cn.leancloud.LCObject;
+import cn.leancloud.LCUser;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
@@ -53,6 +55,7 @@ public class AddProblem extends AppCompatActivity {
     String wrongAnswerImagePath = "";
     String correctAnswerImagePath = "";
     ProblemsListViewModel viewModel;
+    //LiveQueryViewModel viewModelLiveQuery = new LiveQueryViewModel(getApplication());
     static final int REQUEST_TAKE_PHOTO = 1;
     static final int REQUEST_GALLERY = 2;
     String currentPhotoPath;
@@ -105,6 +108,7 @@ public class AddProblem extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_add_problem);  //DataBinding加载视图
         viewModel = new ViewModelProvider(this).get(ProblemsListViewModel.class);
+        //viewModelLiveQuery = new ViewModelProvider(this).get(LiveQueryViewModel.class);
 
 
         //----------------------------UI交互监听设置区域----------------------------
@@ -119,6 +123,8 @@ public class AddProblem extends AppCompatActivity {
                 return;
             }
             String subject = subjectButton.getText().toString();
+            binding.submit.setEnabled(false);
+            AlertDialog alertDialog = LoadingDialog();
             Problem problem = new Problem(subject,
                     binding.problemSrc.getText().toString().trim(),
                     Objects.requireNonNull(binding.problem.getText()).toString().trim(),
@@ -128,10 +134,35 @@ public class AddProblem extends AppCompatActivity {
                     wrongAnswerImagePath,
                     correctAnswerImagePath,
                     Objects.requireNonNull(binding.reason.getText()).toString().trim(),
-                    System.currentTimeMillis(),
+                    getCurrentTime(),
                     false,
-                    binding.ratingBar2.getRating());
-            AddProblemToDB(problem);
+                    String.valueOf(binding.ratingBar2.getRating()));
+            LCObject problemLC = BuildLeancloudObject(problem);
+            problemLC.saveInBackground().subscribe(new Observer<LCObject>() {
+                @Override
+                public void onSubscribe(Disposable d) {
+
+                }
+
+                @Override
+                public void onNext(LCObject lcObject) {
+                    alertDialog.dismiss();
+                    AddProblemToDB(problem);
+                }
+
+                @Override
+                public void onError(Throwable e) {
+                    alertDialog.dismiss();
+                    Toast.makeText(AddProblem.this, "添加失败！原因：" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    binding.submit.setEnabled(true);
+                }
+
+                @Override
+                public void onComplete() {
+
+                }
+            });
+
         });
 
         binding.problemPhoto.setOnClickListener(view -> {
@@ -152,6 +183,23 @@ public class AddProblem extends AppCompatActivity {
     void AddProblemToDB(Problem problem) {
         viewModel.insertProbs(problem);
         finish();
+    }
+
+    public LCObject BuildLeancloudObject(Problem problem) {
+        LCObject problemLC = new LCObject("Problems");
+        problemLC.put("subject", problem.subject);
+        problemLC.put("problemSource", problem.problemSource);
+        problemLC.put("problem", problem.problem);
+        problemLC.put("problemImagePath", problem.getProblemImgPath());
+        problemLC.put("wrongAnswer", problem.wrongAnswer);
+        problemLC.put("wrongAnswerImagePath", problem.getWrongAnswerImgPath());
+        problemLC.put("correctAnswer", problem.correctAnswer);
+        problemLC.put("correctAnswerImagePath", problem.getCorrectImgPath());
+        problemLC.put("reason", problem.reason);
+        problemLC.put("probRate", problem.probRate);
+        problemLC.put("user", LCUser.getCurrentUser());
+        problemLC.put("addTime", getCurrentTime());
+        return problemLC;
     }
 
     private void SetupDialogue() {
@@ -215,7 +263,7 @@ public class AddProblem extends AppCompatActivity {
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
                 ".png",         /* suffix */
-                storageDir      /* directory */
+                storageDir       /* directory */
         );
 
         // Save a file: path for use with ACTION_VIEW intents
@@ -334,5 +382,12 @@ public class AddProblem extends AppCompatActivity {
         alertDialog.setCanceledOnTouchOutside(false);
         alertDialog.show();
         return alertDialog;
+    }
+
+    public String getCurrentTime() {
+        Date date = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日");
+        System.out.println(dateFormat.format(date));
+        return dateFormat.format(date);
     }
 }
