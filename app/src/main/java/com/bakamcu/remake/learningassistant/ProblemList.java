@@ -6,8 +6,6 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
@@ -42,7 +40,9 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.leancloud.LCException;
 import cn.leancloud.LCObject;
+import cn.leancloud.LCQuery;
 import cn.leancloud.LCUser;
 import cn.leancloud.types.LCNull;
 import io.reactivex.Observer;
@@ -89,7 +89,34 @@ public class ProblemList extends Fragment {
                 builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        viewModel.deleteAllProbs();
+                        LCQuery<LCObject> lcquery = new LCQuery<>("Problems");
+                        lcquery.whereEqualTo("user", LCUser.getCurrentUser());
+                        lcquery.findInBackground().subscribe(new Observer<List<LCObject>>() {
+                            @Override
+                            public void onSubscribe(Disposable d) {
+
+                            }
+
+                            @Override
+                            public void onNext(List<LCObject> lcObjects) {
+                                try {
+                                    LCObject.deleteAll(lcObjects);
+                                    RefreshList(queryName, query);
+                                } catch (LCException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+
+                            }
+
+                            @Override
+                            public void onComplete() {
+
+                            }
+                        });
                     }
                 });
                 builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -228,7 +255,7 @@ public class ProblemList extends Fragment {
 
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.START | ItemTouchHelper.END) {
             final Drawable icon = ContextCompat.getDrawable(requireActivity(), R.drawable.ic_baseline_delete_24);
-            final Drawable background = new ColorDrawable(Color.LTGRAY);
+            //final Drawable background = new ColorDrawable(Color.LTGRAY);
 
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
@@ -258,6 +285,8 @@ public class ProblemList extends Fragment {
                                     //viewModel.insertProbs(problemToDelete);
                                     alertDialog.show();
                                     LCObject problemLC = viewModel.BuildLeancloudObject(problemToDelete);
+                                    problemLC.put("addTime", problemToDelete.updateTimeString);
+                                    problemLC.put("addTimeStamp", problemToDelete.updateTimeStamp);
                                     problemLC.saveInBackground().subscribe(new Observer<LCObject>() {
                                         @Override
                                         public void onSubscribe(Disposable d) {
@@ -316,22 +345,22 @@ public class ProblemList extends Fragment {
                 if (dX > 0) {
                     backLeft = itemView.getLeft();
                     backRight = itemView.getLeft() + (int) dX;
-                    background.setBounds(backLeft, backTop, backRight, backBottom);
+                    //background.setBounds(backLeft, backTop, backRight, backBottom);
                     iconLeft = itemView.getLeft() + iconMargin;
                     iconRight = iconLeft + icon.getIntrinsicWidth();
                     icon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
                 } else if (dX < 0) {
                     backRight = itemView.getRight();
                     backLeft = itemView.getRight() + (int) dX;
-                    background.setBounds(backLeft, backTop, backRight, backBottom);
+                    //background.setBounds(backLeft, backTop, backRight, backBottom);
                     iconRight = itemView.getRight() - iconMargin;
                     iconLeft = iconRight - icon.getIntrinsicWidth();
                     icon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
                 } else {
-                    background.setBounds(0, 0, 0, 0);
+                    //background.setBounds(0, 0, 0, 0);
                     icon.setBounds(0, 0, 0, 0);
                 }
-                background.draw(c);
+                //background.draw(c);
                 icon.draw(c);
             }
 
@@ -367,10 +396,6 @@ public class ProblemList extends Fragment {
                 swipeRefreshLayout.setRefreshing(false);
             }
         });
-    }
-
-    public void deleteProb(String objectID) {
-
     }
 
     public AlertDialog LoadingDialog() {

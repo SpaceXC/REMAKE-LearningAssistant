@@ -11,7 +11,6 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.widget.RadioButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,7 +23,7 @@ import androidx.core.content.FileProvider;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.bakamcu.remake.learningassistant.databinding.ActivityAddProblemBinding;
+import com.bakamcu.remake.learningassistant.databinding.ActivityUpdateProblemBinding;
 import com.bumptech.glide.Glide;
 import com.yalantis.ucrop.UCrop;
 
@@ -40,50 +39,85 @@ import cn.leancloud.LCObject;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
-enum PhotoType {
-    PROBLEM,
-    WRONG_ANSWER,
-    CORRECT_ANSWER
-}
-
-public class AddProblem extends AppCompatActivity {
+public class UpdateProblem extends AppCompatActivity {
     final static String TAG = "TAG";    //日志的标签
+    //LiveQueryViewModel viewModelLiveQuery = new LiveQueryViewModel(getApplication());
+    static final int REQUEST_TAKE_PHOTO = 1;
+    static final int REQUEST_GALLERY = 2;
     // 申请相机权限的requestCode
     private static final int PERMISSION_CAMERA_REQUEST_CODE = 0x00000012;
-    ActivityAddProblemBinding binding;  //DataBinding视图
+    ActivityUpdateProblemBinding binding;  //DataBinding视图
     String problemImagePath = "";
     String wrongAnswerImagePath = "";
     String correctAnswerImagePath = "";
     ProblemsListViewModel viewModel;
-    //LiveQueryViewModel viewModelLiveQuery = new LiveQueryViewModel(getApplication());
-    static final int REQUEST_TAKE_PHOTO = 1;
-    static final int REQUEST_GALLERY = 2;
     String currentPhotoPath;
     PhotoType currentPhotoType;
+    Problem origProblem;
     //用于保存拍照图片的uri
     private Uri photoURI;
+
+    /**
+     * 检查权限并拍照。
+     * 调用相机前先检查权限。
+     */
+    private void checkPermissionAndCamera() {
+        int hasCameraPermission = ContextCompat.checkSelfPermission(getApplication(),
+                Manifest.permission.CAMERA);
+        if (hasCameraPermission == PackageManager.PERMISSION_GRANTED) {
+            //有调起相机拍照。
+            //TODO
+            TakePhoto();
+        } else {
+            //没有权限，申请权限。
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA},
+                    PERMISSION_CAMERA_REQUEST_CODE);
+        }
+    }
+
+    /**
+     * 处理权限申请的回调。
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_CAMERA_REQUEST_CODE) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                //允许权限，有调起相机拍照。
+                //TODO
+                TakePhoto();
+
+            } else {
+                //拒绝权限，弹出提示框。
+                Toast.makeText(this, "拍照权限被拒绝", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
 
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_add_problem);  //DataBinding加载视图
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_update_problem);  //DataBinding加载视图
         viewModel = new ViewModelProvider(this).get(ProblemsListViewModel.class);
-
-
+        //viewModelLiveQuery = new ViewModelProvider(this).get(LiveQueryViewModel.class);
+        origProblem = (Problem) getIntent().getSerializableExtra("problem");
+        RecoverProblem();
         //----------------------------UI交互监听设置区域----------------------------
         binding.ratingBar2.setOnRatingBarChangeListener((ratingBar, v, b) -> {
             binding.ratingPercent.setText(v * 20 + "%");    //改变textview里的掌握百分比
         });
 
-        binding.submit.setOnClickListener(view -> {
-            RadioButton subjectButton = findViewById(binding.subjects.getCheckedRadioButtonId());
-            if (subjectButton == null || TextUtils.isEmpty(Objects.requireNonNull(binding.problemSrc.getText()).toString())) {
-                Toast.makeText(AddProblem.this, "请填写带星号的信息！", Toast.LENGTH_SHORT).show();
+        binding.update.setOnClickListener(view -> {
+
+            if (TextUtils.isEmpty(Objects.requireNonNull(binding.subjects.getText().toString())) || TextUtils.isEmpty(Objects.requireNonNull(binding.problemSrc.getText()).toString())) {
+                Toast.makeText(UpdateProblem.this, "请填写带星号的信息！", Toast.LENGTH_SHORT).show();
                 return;
             }
-            String subject = subjectButton.getText().toString();
-            binding.submit.setEnabled(false);
+            String subject = binding.subjects.getText().toString();
+            binding.update.setEnabled(false);
             AlertDialog alertDialog = LoadingDialog();
             Problem problem = new Problem(subject,
                     binding.problemSrc.getText().toString().trim(),
@@ -99,6 +133,7 @@ public class AddProblem extends AppCompatActivity {
                     false,
                     String.valueOf(binding.ratingBar2.getRating()));
             LCObject problemLC = viewModel.BuildLeancloudObject(problem);
+            problemLC.setObjectId(origProblem.problemID);
             problemLC.saveInBackground().subscribe(new Observer<LCObject>() {
                 @Override
                 public void onSubscribe(Disposable d) {
@@ -109,14 +144,14 @@ public class AddProblem extends AppCompatActivity {
                 public void onNext(LCObject lcObject) {
                     alertDialog.dismiss();
                     problem.setProblemID(lcObject.getObjectId());
-                    finish();
+                    AddProblemToDB(problem);
                 }
 
                 @Override
                 public void onError(Throwable e) {
                     alertDialog.dismiss();
-                    Toast.makeText(AddProblem.this, "添加失败！原因：" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    binding.submit.setEnabled(true);
+                    Toast.makeText(UpdateProblem.this, "更新失败！原因：" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    binding.update.setEnabled(true);
                 }
 
                 @Override
@@ -141,10 +176,16 @@ public class AddProblem extends AppCompatActivity {
         });
         //---------------------------UI交互监听设置区域结束---------------------------
     }
+
+    void AddProblemToDB(Problem problem) {
+        viewModel.insertProbs(problem);
+        finish();
+    }
+
     private void SetupDialogue() {
         final String[] ways = new String[]{"拍照", "从相册选择"};
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(AddProblem.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(UpdateProblem.this);
 
         builder.setItems(ways, (dialog, which) -> {
             if (ways[which].equals("拍照")) {
@@ -210,41 +251,39 @@ public class AddProblem extends AppCompatActivity {
         return image;
     }
 
-    /**
-     * 检查权限并拍照。
-     * 调用相机前先检查权限。
-     */
-    private void checkPermissionAndCamera() {
-        int hasCameraPermission = ContextCompat.checkSelfPermission(getApplication(),
-                Manifest.permission.CAMERA);
-        if (hasCameraPermission == PackageManager.PERMISSION_GRANTED) {
-            //有调起相机拍照。
-            //TODO
-            TakePhoto();
-        } else {
-            //没有权限，申请权限。
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA},
-                    PERMISSION_CAMERA_REQUEST_CODE);
+    @SuppressLint("SetTextI18n")
+    void RecoverProblem() {
+        binding.subjects.setText(origProblem.subject);
+        binding.problemSrc.setText(origProblem.problemSource);
+        binding.problem.setText(origProblem.problem);
+        binding.wrongAnswer.setText(origProblem.wrongAnswer);
+        binding.correctAnswer.setText(origProblem.correctAnswer);
+        binding.reason.setText(origProblem.reason);
+        binding.ratingBar2.setRating(Float.parseFloat(origProblem.probRate));
+        binding.ratingPercent.setText(Float.parseFloat(origProblem.probRate) * 20 + "%");
+
+        if (!TextUtils.isEmpty(origProblem.problemImgPath)) {
+            Glide.with(this)
+                    .load(Uri.parse(origProblem.problemImgPath))
+                    .dontAnimate()
+                    .into(binding.problemPicture);
+            problemImagePath = origProblem.problemImgPath;
         }
-    }
-
-    /**
-     * 处理权限申请的回调。
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_CAMERA_REQUEST_CODE) {
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                //允许权限，有调起相机拍照。
-                //TODO
-                TakePhoto();
-
-            } else {
-                //拒绝权限，弹出提示框。
-                Toast.makeText(this, "拍照权限被拒绝", Toast.LENGTH_LONG).show();
-            }
+        if (!TextUtils.isEmpty(origProblem.wrongAnswerImgPath)) {
+            Glide.with(this)
+                    .load(Uri.parse(origProblem.wrongAnswerImgPath))
+                    .dontAnimate()
+                    .placeholder(R.drawable.ic_baseline_image_24)
+                    .into(binding.wrongAnswerPicture);
+            wrongAnswerImagePath = origProblem.wrongAnswerImgPath;
+        }
+        if (!TextUtils.isEmpty(origProblem.correctImgPath)) {
+            Glide.with(this)
+                    .load(Uri.parse(origProblem.correctImgPath))
+                    .dontAnimate()
+                    .placeholder(R.drawable.ic_baseline_image_24)
+                    .into(binding.correctAnswerPicture);
+            correctAnswerImagePath = origProblem.correctImgPath;
         }
     }
 
@@ -258,7 +297,7 @@ public class AddProblem extends AppCompatActivity {
                 if (resultCode == RESULT_OK) {
                     Uri destinationUri = Uri.fromFile(new File(getExternalFilesDir("image"), System.currentTimeMillis() + "-croped.png"));
                     UCrop.of(photoURI, destinationUri)
-                            .start(AddProblem.this);
+                            .start(UpdateProblem.this);
                     Log.d(TAG, "onActivityResult: Attempting to crop image");
                 }
                 break;
@@ -268,7 +307,7 @@ public class AddProblem extends AppCompatActivity {
                     assert data != null;
                     Uri uri = data.getData();
                     Uri destinationUri = Uri.fromFile(new File(getExternalFilesDir("image"), System.currentTimeMillis() + "-croped.png"));
-                    UCrop.of(uri, destinationUri).start(AddProblem.this);
+                    UCrop.of(uri, destinationUri).start(UpdateProblem.this);
                     Log.d(TAG, "onActivityResult: Requesting Crop Activity");
                 }
                 break;
@@ -289,19 +328,11 @@ public class AddProblem extends AppCompatActivity {
                             break;
                         case WRONG_ANSWER:
                             //binding.wrongAnswerPicture.setImageURI(cropResultUri);
-                            Glide.with(this)
-                                    .load(cropResultUri)
-                                    .dontAnimate()
-                                    .into(binding.wrongAnswerPicture);
                             assert cropResultUri != null;
                             UploadPictureToLC(cropResultUri.getPath());
                             break;
                         case CORRECT_ANSWER:
                             //binding.correctAnswerPicture.setImageURI(cropResultUri);
-                            Glide.with(this)
-                                    .load(cropResultUri)
-                                    .dontAnimate()
-                                    .into(binding.correctAnswerPicture);
                             assert cropResultUri != null;
                             UploadPictureToLC(cropResultUri.getPath());
                             break;
@@ -313,8 +344,10 @@ public class AddProblem extends AppCompatActivity {
         }
     }
 
+    //-------------------图片相关结束------------------
+
     void UploadPictureToLC(String path) {
-        binding.submit.setEnabled(false);
+        binding.update.setEnabled(false);
         AlertDialog alertDialog = LoadingDialog();
         Log.d(TAG, "UploadPictureToLC: ");
         LCFile file = null;
@@ -329,7 +362,7 @@ public class AddProblem extends AppCompatActivity {
             }
 
             public void onNext(LCFile file) {
-                binding.submit.setEnabled(true);
+                binding.update.setEnabled(true);
 
                 switch (currentPhotoType) {
                     case PROBLEM:
@@ -340,12 +373,10 @@ public class AddProblem extends AppCompatActivity {
                     case WRONG_ANSWER:
                         wrongAnswerImagePath = file.getUrl();
                         System.out.println("wrongAnswer文件保存完成。URL：" + wrongAnswerImagePath);
-                        alertDialog.dismiss();
                         break;
                     case CORRECT_ANSWER:
                         correctAnswerImagePath = file.getUrl();
                         System.out.println("CorrectAnswer文件保存完成。URL：" + correctAnswerImagePath);
-                        alertDialog.dismiss();
                         break;
                 }
 
@@ -355,16 +386,14 @@ public class AddProblem extends AppCompatActivity {
                 // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
                 Log.d(TAG, "onError: " + throwable.getMessage());
                 alertDialog.dismiss();
-                binding.submit.setEnabled(true);
-                Toast.makeText(AddProblem.this, "图片上传失败！请检查网络连接并重试！", Toast.LENGTH_SHORT).show();
+                binding.update.setEnabled(true);
+                Toast.makeText(UpdateProblem.this, "图片上传失败！请检查网络连接并重试！", Toast.LENGTH_SHORT).show();
             }
 
             public void onComplete() {
             }
         });
     }
-
-    //-------------------图片相关结束------------------
 
     public AlertDialog LoadingDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

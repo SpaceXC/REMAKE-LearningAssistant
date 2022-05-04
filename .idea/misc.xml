@@ -7,6 +7,8 @@
         <entry key="app/src/main/res/drawable/ic_baseline_add_24.xml" value="0.294" />
         <entry key="app/src/main/res/drawable/ic_baseline_add_24_white.xml" value="0.2175" />
         <entry key="app/src/main/res/drawable/ic_baseline_brightness_1_24.xml" value="0.222" />
+        <entry key="app/src/main/res/drawable/ic_baseline_delete_24.xml" value="0.3045" />
+        <entry key="app/src/main/res/drawable/ic_baseline_edit_24.xml" value="0.185" />
         <entry key="app/src/main/res/drawable/ic_baseline_exit_to_app_24.xml" value="0.3095" />
         <entry key="app/src/main/res/drawable/ic_baseline_image_24.xml" value="0.222" />
         <entry key="app/src/main/res/drawable/ic_baseline_image_24_card_preview.xml" value="0.181" />
@@ -23,6 +25,7 @@
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.31970260223048325" />
         <entry key="app/src/main/res/layout/activity_register.xml" value="0.31252672082086363" />
         <entry key="app/src/main/res/layout/activity_splash_screen.xml" value="0.285546875" />
+        <entry key="app/src/main/res/layout/activity_update_problem.xml" value="0.3099615220179564" />
         <entry key="app/src/main/res/layout/bottom_dialogue.xml" value="0.3384259259259259" />
         <entry key="app/src/main/res/layout/cell_problem.xml" value="0.4906967163085939" />
         <entry key="app/src/main/res/layout/cell_problem_with_image.xml" value="0.29476906105324074" />

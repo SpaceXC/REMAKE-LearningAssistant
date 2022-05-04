@@ -29,6 +29,10 @@
             android:exported="false"
             android:label="注册" />
         <activity
+            android:name=".UpdateProblem"
+            android:exported="false"
+            android:label="编辑题目" />
+        <activity
             android:name=".SplashScreen"
             android:exported="true"
             android:theme="@style/Theme.SplashScreen">

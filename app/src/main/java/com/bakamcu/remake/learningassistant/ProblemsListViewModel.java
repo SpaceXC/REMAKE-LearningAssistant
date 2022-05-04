@@ -14,7 +14,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -68,9 +68,7 @@ public class ProblemsListViewModel extends AndroidViewModel {
         lcquery.findInBackground().subscribe(new Observer<List<LCObject>>() {
             public void onSubscribe(Disposable disposable) {
             }
-
             public void onNext(List<LCObject> LCProblems) {
-
                 for (LCObject object : LCProblems) {
                     Problem temp = new Problem(
                             (String) object.get("subject"),
@@ -91,13 +89,31 @@ public class ProblemsListViewModel extends AndroidViewModel {
                     tempList.add(temp);
                     Log.d(TAG, "onNext: " + tempList.size());
                 }
-                Collections.reverse(tempList);
+                //Collections.reverse(tempList);
+                Comparator<Problem> comparator = new Comparator<Problem>() {
+                    @Override
+                    public int compare(Problem problem, Problem t1) {
+                        long time1 = Long.parseLong(problem.updateTimeStamp);
+                        Log.d(TAG, "compare: " + problem.problemSource + " " + time1);
+                        long time2 = Long.parseLong(t1.updateTimeStamp);
+                        Log.d(TAG, "compare: " + problem.problemSource + " " + time2);
+
+                        if (time1 < time2) {
+                            return 1;
+                        } else if (time1 > time2) {
+                            return -1;
+                        }
+
+                        return 0;
+                    }
+                };
                 //Collections.sort(tempList);
+                tempList.sort(comparator);
                 listObject.setValue(tempList);
             }
 
             public void onError(Throwable throwable) {
-                Toast.makeText(getApplication(), "无法获取数据，原因：" + throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplication(), "无法获取数据，原因：" + throwable.getCause().getMessage(), Toast.LENGTH_SHORT).show();
             }
 
             public void onComplete() {

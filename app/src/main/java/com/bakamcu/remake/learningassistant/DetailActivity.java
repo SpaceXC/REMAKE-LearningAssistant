@@ -1,6 +1,7 @@
 package com.bakamcu.remake.learningassistant;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -41,13 +42,24 @@ public class DetailActivity extends AppCompatActivity {
             Glide.with(this)
                     .load(Uri.parse(problem.wrongAnswerImgPath))
                     .dontAnimate()
+                    .placeholder(R.drawable.ic_baseline_image_24)
                     .into(binding.wrongAnwerImg);
         }
         if (!TextUtils.isEmpty(problem.correctImgPath)) {
             Glide.with(this)
                     .load(Uri.parse(problem.correctImgPath))
                     .dontAnimate()
+                    .placeholder(R.drawable.ic_baseline_image_24)
                     .into(binding.correctAnswerImg);
         }
+
+
+        //----------------------
+        binding.edit.setOnClickListener(view -> {
+            Intent intent = new Intent(DetailActivity.this, UpdateProblem.class);
+            intent.putExtra("problem", problem);
+            startActivity(intent);
+            finish();
+        });
     }
 }
