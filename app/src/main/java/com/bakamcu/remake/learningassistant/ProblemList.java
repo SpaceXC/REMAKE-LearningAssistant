@@ -109,7 +109,7 @@ public class ProblemList extends Fragment {
 
                             @Override
                             public void onError(Throwable e) {
-
+                                Toast.makeText(requireActivity(), "清空失败！原因" + e.getMessage(), Toast.LENGTH_SHORT).show();
                             }
 
                             @Override
@@ -304,6 +304,7 @@ public class ProblemList extends Fragment {
                                         public void onError(Throwable e) {
                                             alertDialog.dismiss();
                                             Toast.makeText(requireActivity(), "撤销失败！原因：" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                            RefreshList(queryName, query);
                                         }
 
                                         @Override
@@ -318,7 +319,9 @@ public class ProblemList extends Fragment {
 
                     @Override
                     public void onError(@NonNull Throwable e) {
-                        System.out.println("failed to delete a todo: " + e.getMessage());
+                        alertDialog.dismiss();
+                        Toast.makeText(requireActivity(), "删除失败！原因：" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        RefreshList(queryName, query);
                     }
 
                     @Override
