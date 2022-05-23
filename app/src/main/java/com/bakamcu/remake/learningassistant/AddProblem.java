@@ -98,7 +98,7 @@ public class AddProblem extends AppCompatActivity {
                     String.valueOf(System.currentTimeMillis()),
                     false,
                     String.valueOf(binding.ratingBar2.getRating()));
-            LCObject problemLC = viewModel.BuildLeancloudObject(problem);
+            LCObject problemLC = viewModel.BuildLeanCloudObject(problem);
             problemLC.saveInBackground().subscribe(new Observer<LCObject>() {
                 @Override
                 public void onSubscribe(Disposable d) {
@@ -379,7 +379,7 @@ public class AddProblem extends AppCompatActivity {
 
     public String getCurrentTime() {
         Date date = new Date();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日");
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日");
         System.out.println(dateFormat.format(date));
         return dateFormat.format(date);
     }

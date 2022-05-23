@@ -112,7 +112,7 @@ public class UpdateProblem extends AppCompatActivity {
 
         binding.update.setOnClickListener(view -> {
 
-            if (TextUtils.isEmpty(Objects.requireNonNull(binding.subjects.getText().toString())) || TextUtils.isEmpty(Objects.requireNonNull(binding.problemSrc.getText()).toString())) {
+            if (TextUtils.isEmpty(Objects.requireNonNull(Objects.requireNonNull(binding.subjects.getText()).toString())) || TextUtils.isEmpty(Objects.requireNonNull(binding.problemSrc.getText()).toString())) {
                 Toast.makeText(UpdateProblem.this, "请填写带星号的信息！", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -132,7 +132,7 @@ public class UpdateProblem extends AppCompatActivity {
                     String.valueOf(System.currentTimeMillis()),
                     false,
                     String.valueOf(binding.ratingBar2.getRating()));
-            LCObject problemLC = viewModel.BuildLeancloudObject(problem);
+            LCObject problemLC = viewModel.BuildLeanCloudObject(problem);
             problemLC.setObjectId(origProblem.problemID);
             problemLC.saveInBackground().subscribe(new Observer<LCObject>() {
                 @Override
@@ -295,7 +295,7 @@ public class UpdateProblem extends AppCompatActivity {
                 Log.d(TAG, "onActivityResult: REQUEST_TAKE_PHOTO");
 
                 if (resultCode == RESULT_OK) {
-                    Uri destinationUri = Uri.fromFile(new File(getExternalFilesDir("image"), System.currentTimeMillis() + "-croped.png"));
+                    Uri destinationUri = Uri.fromFile(new File(getExternalFilesDir("image"), System.currentTimeMillis() + "-cropped.png"));
                     UCrop.of(photoURI, destinationUri)
                             .start(UpdateProblem.this);
                     Log.d(TAG, "onActivityResult: Attempting to crop image");
@@ -306,7 +306,7 @@ public class UpdateProblem extends AppCompatActivity {
                 if (resultCode == RESULT_OK) {
                     assert data != null;
                     Uri uri = data.getData();
-                    Uri destinationUri = Uri.fromFile(new File(getExternalFilesDir("image"), System.currentTimeMillis() + "-croped.png"));
+                    Uri destinationUri = Uri.fromFile(new File(getExternalFilesDir("image"), System.currentTimeMillis() + "-cropped.png"));
                     UCrop.of(uri, destinationUri).start(UpdateProblem.this);
                     Log.d(TAG, "onActivityResult: Requesting Crop Activity");
                 }
@@ -327,12 +327,7 @@ public class UpdateProblem extends AppCompatActivity {
                             UploadPictureToLC(cropResultUri.getPath());
                             break;
                         case WRONG_ANSWER:
-                            //binding.wrongAnswerPicture.setImageURI(cropResultUri);
-                            assert cropResultUri != null;
-                            UploadPictureToLC(cropResultUri.getPath());
-                            break;
                         case CORRECT_ANSWER:
-                            //binding.correctAnswerPicture.setImageURI(cropResultUri);
                             assert cropResultUri != null;
                             UploadPictureToLC(cropResultUri.getPath());
                             break;
@@ -408,7 +403,7 @@ public class UpdateProblem extends AppCompatActivity {
 
     public String getCurrentTime() {
         Date date = new Date();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日");
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日");
         System.out.println(dateFormat.format(date));
         return dateFormat.format(date);
     }

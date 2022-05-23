@@ -3,7 +3,6 @@ package com.bakamcu.remake.learningassistant;
 import static com.bakamcu.remake.learningassistant.AddProblem.TAG;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,11 +17,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class ProblemListAdapter extends ListAdapter<Problem, ProblemListAdapter.ProblemViewHolder> {
 
-    public ProblemListAdapter(Context context) {
+    public ProblemListAdapter() {
         super(new DiffUtil.ItemCallback<Problem>() {
             @Override
             public boolean areItemsTheSame(@NonNull Problem oldItem, @NonNull Problem newItem) {
-                return oldItem.getProblemID() == newItem.getProblemID();
+                return oldItem.getProblemID().equals(newItem.getProblemID());
             }
 
             @Override
@@ -39,7 +38,6 @@ public class ProblemListAdapter extends ListAdapter<Problem, ProblemListAdapter.
     public ProblemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater probInflater = LayoutInflater.from(parent.getContext());
         View itemView = probInflater.inflate(R.layout.cell_problem, parent, false);
-        final ProblemViewHolder holder = new ProblemViewHolder(itemView);
 
         return new ProblemViewHolder(itemView);
     }

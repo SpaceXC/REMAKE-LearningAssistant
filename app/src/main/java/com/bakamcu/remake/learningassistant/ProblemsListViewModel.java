@@ -40,34 +40,23 @@ public class ProblemsListViewModel extends AndroidViewModel {
         return problemRepo.getAllProbLive();
     }
 
-    LiveData<List<Problem>> findProblemWithPattern(String pattern) {
-        return problemRepo.searchedProblems(pattern);
-    }
-
     void insertProbs(Problem... problems) {
         problemRepo.insertProbs(problems);
-    }
-
-    void updateProbs(Problem... problems) {
-        problemRepo.updateProbs(problems);
     }
 
     void deleteProbs(Problem... problems) {
         problemRepo.deleteProbs(problems);
     }
 
-    void deleteAllProbs() {
-        problemRepo.deleteAllProbs();
-    }
-
-    List<Problem> getAllProblems(String queryName, String query, MutableLiveData<List<Problem>> listObject) {
-        LCQuery<LCObject> lcquery = new LCQuery<>("Problems");
+    void getAllProblems(String queryName, String query, MutableLiveData<List<Problem>> listObject) {
+        LCQuery<LCObject> LeanCloudQuery = new LCQuery<>("Problems");
         List<Problem> tempList = new ArrayList<>();
-        lcquery.whereContains(queryName, query);
-        lcquery.whereEqualTo("user", LCUser.getCurrentUser());
-        lcquery.findInBackground().subscribe(new Observer<List<LCObject>>() {
+        LeanCloudQuery.whereContains(queryName, query);
+        LeanCloudQuery.whereEqualTo("user", LCUser.getCurrentUser());
+        LeanCloudQuery.findInBackground().subscribe(new Observer<List<LCObject>>() {
             public void onSubscribe(Disposable disposable) {
             }
+
             public void onNext(List<LCObject> LCProblems) {
                 for (LCObject object : LCProblems) {
                     Problem temp = new Problem(
@@ -90,22 +79,19 @@ public class ProblemsListViewModel extends AndroidViewModel {
                     Log.d(TAG, "onNext: " + tempList.size());
                 }
                 //Collections.reverse(tempList);
-                Comparator<Problem> comparator = new Comparator<Problem>() {
-                    @Override
-                    public int compare(Problem problem, Problem t1) {
-                        long time1 = Long.parseLong(problem.updateTimeStamp);
-                        Log.d(TAG, "compare: " + problem.problemSource + " " + time1);
-                        long time2 = Long.parseLong(t1.updateTimeStamp);
-                        Log.d(TAG, "compare: " + problem.problemSource + " " + time2);
+                Comparator<Problem> comparator = (problem, t1) -> {
+                    long time1 = Long.parseLong(problem.updateTimeStamp);
+                    Log.d(TAG, "compare: " + problem.problemSource + " " + time1);
+                    long time2 = Long.parseLong(t1.updateTimeStamp);
+                    Log.d(TAG, "compare: " + problem.problemSource + " " + time2);
 
-                        if (time1 < time2) {
-                            return 1;
-                        } else if (time1 > time2) {
-                            return -1;
-                        }
-
-                        return 0;
+                    if (time1 < time2) {
+                        return 1;
+                    } else if (time1 > time2) {
+                        return -1;
                     }
+
+                    return 0;
                 };
                 //Collections.sort(tempList);
                 tempList.sort(comparator);
@@ -113,7 +99,7 @@ public class ProblemsListViewModel extends AndroidViewModel {
             }
 
             public void onError(Throwable throwable) {
-                Toast.makeText(getApplication(), "无法获取数据，原因：" + throwable.getCause().getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplication(), "无法获取数据!", Toast.LENGTH_SHORT).show();
             }
 
             public void onComplete() {
@@ -121,10 +107,9 @@ public class ProblemsListViewModel extends AndroidViewModel {
         });
 
 
-        return tempList;
     }
 
-    public LCObject BuildLeancloudObject(Problem problem) {
+    public LCObject BuildLeanCloudObject(Problem problem) {
         LCObject problemLC = new LCObject("Problems");
         problemLC.put("subject", problem.subject);
         problemLC.put("problemSource", problem.problemSource);

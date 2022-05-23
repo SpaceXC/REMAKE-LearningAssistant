@@ -1,6 +1,5 @@
 package com.bakamcu.remake.learningassistant;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -46,19 +45,13 @@ public class ProfileFragment extends Fragment {
             AlertDialog.Builder logoutDialogBuilder = new AlertDialog.Builder(requireActivity());
             logoutDialogBuilder.setTitle("登出账号");
             logoutDialogBuilder.setMessage("您确定要登出账号吗？");
-            logoutDialogBuilder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    startActivity(new Intent(getContext(), LoginActivity.class));
-                    LCUser.logOut();
-                    requireActivity().finish();
-                }
+            logoutDialogBuilder.setPositiveButton("确定", (dialog, which) -> {
+                startActivity(new Intent(getContext(), LoginActivity.class));
+                LCUser.logOut();
+                requireActivity().finish();
             });
-            logoutDialogBuilder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
+            logoutDialogBuilder.setNegativeButton("取消", (dialog, which) -> {
 
-                }
             });
             logoutDialogBuilder.create();
             logoutDialogBuilder.show();

@@ -22,7 +22,7 @@ public class Problem implements Serializable {
     String updateTimeString;
     String updateTimeStamp;
     boolean corrAnsInvisible;
-    String probRate = "0";
+    String probRate;
     String problemID;
 
     public Problem(String subject, String problemSource, String problem, String wrongAnswer, String correctAnswer, String problemImgPath, String wrongAnswerImgPath, String correctImgPath, String reason, String updateTimeString, String updateTimeStamp, boolean corrAnsInvisible, String probRate) {

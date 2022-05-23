@@ -1,12 +1,14 @@
 package com.bakamcu.remake.learningassistant;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import cn.leancloud.LCUser;
 
+@SuppressLint("CustomSplashScreen")
 public class SplashScreen extends AppCompatActivity {
 
     @Override
@@ -14,14 +16,13 @@ public class SplashScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
         LCUser currentUser = LCUser.getCurrentUser();
+        Intent intent;
         if (currentUser != null) {
-            Intent intent = new Intent(SplashScreen.this, MainActivity.class);
-            startActivity(intent);
-            finish();
+            intent = new Intent(SplashScreen.this, MainActivity.class);
         } else {
-            Intent intent = new Intent(SplashScreen.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
+            intent = new Intent(SplashScreen.this, LoginActivity.class);
         }
+        startActivity(intent);
+        finish();
     }
 }

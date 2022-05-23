@@ -3,7 +3,6 @@ package com.bakamcu.remake.learningassistant;
 import static com.bakamcu.remake.learningassistant.AddProblem.TAG;
 
 import android.annotation.SuppressLint;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
@@ -86,44 +85,38 @@ public class ProblemList extends Fragment {
                 AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
                 builder.setTitle("清空数据");
                 builder.setMessage("您确定要清空全部吗？");
-                builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        LCQuery<LCObject> lcquery = new LCQuery<>("Problems");
-                        lcquery.whereEqualTo("user", LCUser.getCurrentUser());
-                        lcquery.findInBackground().subscribe(new Observer<List<LCObject>>() {
-                            @Override
-                            public void onSubscribe(Disposable d) {
+                builder.setPositiveButton("确定", (dialog, which) -> {
+                    LCQuery<LCObject> LeanCloudQuery = new LCQuery<>("Problems");
+                    LeanCloudQuery.whereEqualTo("user", LCUser.getCurrentUser());
+                    LeanCloudQuery.findInBackground().subscribe(new Observer<List<LCObject>>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
 
+                        }
+
+                        @Override
+                        public void onNext(List<LCObject> lcObjects) {
+                            try {
+                                LCObject.deleteAll(lcObjects);
+                                RefreshList(queryName, query);
+                            } catch (LCException e) {
+                                e.printStackTrace();
                             }
+                        }
 
-                            @Override
-                            public void onNext(List<LCObject> lcObjects) {
-                                try {
-                                    LCObject.deleteAll(lcObjects);
-                                    RefreshList(queryName, query);
-                                } catch (LCException e) {
-                                    e.printStackTrace();
-                                }
-                            }
+                        @Override
+                        public void onError(Throwable e) {
+                            Toast.makeText(requireActivity(), "清空失败！原因" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
 
-                            @Override
-                            public void onError(Throwable e) {
-                                Toast.makeText(requireActivity(), "清空失败！原因" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            }
+                        @Override
+                        public void onComplete() {
 
-                            @Override
-                            public void onComplete() {
-
-                            }
-                        });
-                    }
+                        }
+                    });
                 });
-                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                builder.setNegativeButton("取消", (dialog, which) -> {
 
-                    }
                 });
                 builder.create();
                 builder.show();
@@ -132,19 +125,13 @@ public class ProblemList extends Fragment {
                 AlertDialog.Builder logoutDialogBuilder = new AlertDialog.Builder(requireActivity());
                 logoutDialogBuilder.setTitle("登出账号");
                 logoutDialogBuilder.setMessage("您确定要登出账号吗？");
-                logoutDialogBuilder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        startActivity(new Intent(getContext(), LoginActivity.class));
-                        LCUser.logOut();
-                        requireActivity().finish();
-                    }
+                logoutDialogBuilder.setPositiveButton("确定", (dialog, which) -> {
+                    startActivity(new Intent(getContext(), LoginActivity.class));
+                    LCUser.logOut();
+                    requireActivity().finish();
                 });
-                logoutDialogBuilder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                logoutDialogBuilder.setNegativeButton("取消", (dialog, which) -> {
 
-                    }
                 });
                 logoutDialogBuilder.create();
                 logoutDialogBuilder.show();
@@ -219,26 +206,19 @@ public class ProblemList extends Fragment {
                 RefreshList(queryName, query);
             }
         });
-        adapter = new ProblemListAdapter(getActivity());
+        adapter = new ProblemListAdapter();
         recyclerView.setAdapter(adapter);
         recyclerViewManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(recyclerViewManager);
 
         swipeRefreshLayout = requireView().findViewById(R.id.swipeRefreshLayout);
-        swipeRefreshLayout.setOnRefreshListener(() -> {
-            RefreshList(queryName, query);
-        });
+        swipeRefreshLayout.setOnRefreshListener(() -> RefreshList(queryName, query));
         problemList.observe(requireActivity(), problems -> {
             int temp = adapter.getItemCount();
             allProblems = problemList.getValue();
             if (temp != problems.size()) {
                 if (temp < problems.size() && !undoAction) {
-                    recyclerView.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            recyclerView.smoothScrollToPosition(0);
-                        }
-                    });
+                    recyclerView.post(() -> recyclerView.smoothScrollToPosition(0));
                 }
                 undoAction = false;
                 adapter.submitList(problems);
@@ -284,7 +264,7 @@ public class ProblemList extends Fragment {
                                     undoAction = true;
                                     //viewModel.insertProbs(problemToDelete);
                                     alertDialog.show();
-                                    LCObject problemLC = viewModel.BuildLeancloudObject(problemToDelete);
+                                    LCObject problemLC = viewModel.BuildLeanCloudObject(problemToDelete);
                                     problemLC.put("addTime", problemToDelete.updateTimeString);
                                     problemLC.put("addTimeStamp", problemToDelete.updateTimeStamp);
                                     problemLC.saveInBackground().subscribe(new Observer<LCObject>() {
@@ -340,22 +320,16 @@ public class ProblemList extends Fragment {
                 int iconMargin = (itemView.getHeight() - icon.getIntrinsicHeight()) / 2;
 
                 int iconLeft, iconRight, iconTop, iconBottom;
-                int backTop, backBottom, backLeft, backRight;
-                backTop = itemView.getTop();
-                backBottom = itemView.getBottom();
+
                 iconTop = itemView.getTop() + (itemView.getHeight() - icon.getIntrinsicHeight()) / 2;
                 iconBottom = iconTop + icon.getIntrinsicHeight();
                 if (dX > 0) {
-                    backLeft = itemView.getLeft();
-                    backRight = itemView.getLeft() + (int) dX;
-                    //background.setBounds(backLeft, backTop, backRight, backBottom);
+
                     iconLeft = itemView.getLeft() + iconMargin;
                     iconRight = iconLeft + icon.getIntrinsicWidth();
                     icon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
                 } else if (dX < 0) {
-                    backRight = itemView.getRight();
-                    backLeft = itemView.getRight() + (int) dX;
-                    //background.setBounds(backLeft, backTop, backRight, backBottom);
+
                     iconRight = itemView.getRight() - iconMargin;
                     iconLeft = iconRight - icon.getIntrinsicWidth();
                     icon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
@@ -376,29 +350,14 @@ public class ProblemList extends Fragment {
     public void onResume() {
         super.onResume();
         Log.d(TAG, "onResume: ProblemList");
-        swipeRefreshLayout.post(new Runnable() {
-            @Override
-            public void run() {
-                swipeRefreshLayout.setRefreshing(true);
-            }
-        });
+        swipeRefreshLayout.post(() -> swipeRefreshLayout.setRefreshing(true));
         RefreshList(queryName, query);
     }
 
     public void RefreshList(String queryName, String query) {
         viewModel.getAllProblems(queryName, query, problemList);
-        recyclerView.post(new Runnable() {
-            @Override
-            public void run() {
-                recyclerView.smoothScrollToPosition(0);
-            }
-        });
-        swipeRefreshLayout.post(new Runnable() {
-            @Override
-            public void run() {
-                swipeRefreshLayout.setRefreshing(false);
-            }
-        });
+        recyclerView.post(() -> recyclerView.smoothScrollToPosition(0));
+        swipeRefreshLayout.post(() -> swipeRefreshLayout.setRefreshing(false));
     }
 
     public AlertDialog LoadingDialog() {
