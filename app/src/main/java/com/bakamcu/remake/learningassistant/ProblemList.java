@@ -32,6 +32,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.bakamcu.remake.learningassistant.utils.DialogUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
@@ -244,7 +245,7 @@ public class ProblemList extends Fragment {
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                AlertDialog alertDialog = LoadingDialog();
+                AlertDialog alertDialog = DialogUtils.getInstance(requireActivity()).LoadingDialog();
                 alertDialog.show();
                 final Problem problemToDelete = allProblems.get(viewHolder.getAdapterPosition());
                 viewModel.deleteProbs(problemToDelete);
@@ -358,16 +359,5 @@ public class ProblemList extends Fragment {
         viewModel.getAllProblems(queryName, query, problemList);
         recyclerView.post(() -> recyclerView.smoothScrollToPosition(0));
         swipeRefreshLayout.post(() -> swipeRefreshLayout.setRefreshing(false));
-    }
-
-    public AlertDialog LoadingDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
-        View dialogView = View.inflate(requireActivity(), R.layout.loading_dialog, null);
-        builder.setView(dialogView);
-        AlertDialog alertDialog = builder.create();
-        alertDialog.setCancelable(false);
-        alertDialog.setCanceledOnTouchOutside(false);
-        alertDialog.show();
-        return alertDialog;
     }
 }

@@ -29,7 +29,7 @@
             android:exported="false"
             android:label="注册" />
         <activity
-            android:name=".UpdateProblem"
+            android:name=".UpdateProblemActivity"
             android:exported="false"
             android:label="编辑题目" />
         <activity

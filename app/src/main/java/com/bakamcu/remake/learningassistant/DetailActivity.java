@@ -56,7 +56,7 @@ public class DetailActivity extends AppCompatActivity {
 
         //----------------------
         binding.edit.setOnClickListener(view -> {
-            Intent intent = new Intent(DetailActivity.this, UpdateProblem.class);
+            Intent intent = new Intent(DetailActivity.this, UpdateProblemActivity.class);
             intent.putExtra("problem", problem);
             startActivity(intent);
             finish();

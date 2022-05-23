@@ -10,7 +10,6 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.View;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
@@ -25,6 +24,7 @@ import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bakamcu.remake.learningassistant.databinding.ActivityAddProblemBinding;
+import com.bakamcu.remake.learningassistant.utils.DialogUtils;
 import com.bumptech.glide.Glide;
 import com.yalantis.ucrop.UCrop;
 
@@ -84,7 +84,7 @@ public class AddProblem extends AppCompatActivity {
             }
             String subject = subjectButton.getText().toString();
             binding.submit.setEnabled(false);
-            AlertDialog alertDialog = LoadingDialog();
+            AlertDialog alertDialog = DialogUtils.getInstance(AddProblem.this).LoadingDialog();
             Problem problem = new Problem(subject,
                     binding.problemSrc.getText().toString().trim(),
                     Objects.requireNonNull(binding.problem.getText()).toString().trim(),
@@ -256,7 +256,7 @@ public class AddProblem extends AppCompatActivity {
                 Log.d(TAG, "onActivityResult: REQUEST_TAKE_PHOTO");
 
                 if (resultCode == RESULT_OK) {
-                    Uri destinationUri = Uri.fromFile(new File(getExternalFilesDir("image"), System.currentTimeMillis() + "-croped.png"));
+                    Uri destinationUri = Uri.fromFile(new File(getExternalFilesDir("image"), System.currentTimeMillis() + "-cropped.png"));
                     UCrop.of(photoURI, destinationUri)
                             .start(AddProblem.this);
                     Log.d(TAG, "onActivityResult: Attempting to crop image");
@@ -267,7 +267,7 @@ public class AddProblem extends AppCompatActivity {
                 if (resultCode == RESULT_OK) {
                     assert data != null;
                     Uri uri = data.getData();
-                    Uri destinationUri = Uri.fromFile(new File(getExternalFilesDir("image"), System.currentTimeMillis() + "-croped.png"));
+                    Uri destinationUri = Uri.fromFile(new File(getExternalFilesDir("image"), System.currentTimeMillis() + "-cropped.png"));
                     UCrop.of(uri, destinationUri).start(AddProblem.this);
                     Log.d(TAG, "onActivityResult: Requesting Crop Activity");
                 }
@@ -315,7 +315,7 @@ public class AddProblem extends AppCompatActivity {
 
     void UploadPictureToLC(String path) {
         binding.submit.setEnabled(false);
-        AlertDialog alertDialog = LoadingDialog();
+        AlertDialog alertDialog = new DialogUtils(AddProblem.this).LoadingDialog();
         Log.d(TAG, "UploadPictureToLC: ");
         LCFile file = null;
         try {
@@ -365,17 +365,6 @@ public class AddProblem extends AppCompatActivity {
     }
 
     //-------------------图片相关结束------------------
-
-    public AlertDialog LoadingDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View dialogView = View.inflate(this, R.layout.loading_dialog, null);
-        builder.setView(dialogView);
-        AlertDialog alertDialog = builder.create();
-        alertDialog.setCancelable(false);
-        alertDialog.setCanceledOnTouchOutside(false);
-        alertDialog.show();
-        return alertDialog;
-    }
 
     public String getCurrentTime() {
         Date date = new Date();

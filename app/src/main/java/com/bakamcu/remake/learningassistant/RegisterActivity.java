@@ -3,13 +3,13 @@ package com.bakamcu.remake.learningassistant;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bakamcu.remake.learningassistant.utils.DialogUtils;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.Objects;
@@ -37,7 +37,7 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     void Register() {
-        AlertDialog alertDialog = LoadingDialog();
+        AlertDialog alertDialog = DialogUtils.getInstance(RegisterActivity.this).LoadingDialog();
         if (TextUtils.isEmpty(username.getText()) || TextUtils.isEmpty(password.getText())) {
             Toast.makeText(RegisterActivity.this, "用户名或密码为空", Toast.LENGTH_SHORT).show();
             alertDialog.dismiss();
@@ -96,14 +96,4 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    public AlertDialog LoadingDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View dialogView = View.inflate(this, R.layout.loading_dialog, null);
-        builder.setView(dialogView);
-        AlertDialog alertDialog = builder.create();
-        alertDialog.setCancelable(false);
-        alertDialog.setCanceledOnTouchOutside(false);
-        alertDialog.show();
-        return alertDialog;
-    }
 }

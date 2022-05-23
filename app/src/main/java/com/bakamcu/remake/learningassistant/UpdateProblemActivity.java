@@ -10,7 +10,6 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,6 +23,7 @@ import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bakamcu.remake.learningassistant.databinding.ActivityUpdateProblemBinding;
+import com.bakamcu.remake.learningassistant.utils.DialogUtils;
 import com.bumptech.glide.Glide;
 import com.yalantis.ucrop.UCrop;
 
@@ -39,7 +39,7 @@ import cn.leancloud.LCObject;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
-public class UpdateProblem extends AppCompatActivity {
+public class UpdateProblemActivity extends AppCompatActivity {
     final static String TAG = "TAG";    //日志的标签
     //LiveQueryViewModel viewModelLiveQuery = new LiveQueryViewModel(getApplication());
     static final int REQUEST_TAKE_PHOTO = 1;
@@ -113,12 +113,12 @@ public class UpdateProblem extends AppCompatActivity {
         binding.update.setOnClickListener(view -> {
 
             if (TextUtils.isEmpty(Objects.requireNonNull(Objects.requireNonNull(binding.subjects.getText()).toString())) || TextUtils.isEmpty(Objects.requireNonNull(binding.problemSrc.getText()).toString())) {
-                Toast.makeText(UpdateProblem.this, "请填写带星号的信息！", Toast.LENGTH_SHORT).show();
+                Toast.makeText(UpdateProblemActivity.this, "请填写带星号的信息！", Toast.LENGTH_SHORT).show();
                 return;
             }
             String subject = binding.subjects.getText().toString();
             binding.update.setEnabled(false);
-            AlertDialog alertDialog = LoadingDialog();
+            AlertDialog alertDialog = DialogUtils.getInstance(UpdateProblemActivity.this).LoadingDialog();
             Problem problem = new Problem(subject,
                     binding.problemSrc.getText().toString().trim(),
                     Objects.requireNonNull(binding.problem.getText()).toString().trim(),
@@ -150,7 +150,7 @@ public class UpdateProblem extends AppCompatActivity {
                 @Override
                 public void onError(Throwable e) {
                     alertDialog.dismiss();
-                    Toast.makeText(UpdateProblem.this, "更新失败！原因：" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(UpdateProblemActivity.this, "更新失败！原因：" + e.getMessage(), Toast.LENGTH_SHORT).show();
                     binding.update.setEnabled(true);
                 }
 
@@ -185,7 +185,7 @@ public class UpdateProblem extends AppCompatActivity {
     private void SetupDialogue() {
         final String[] ways = new String[]{"拍照", "从相册选择"};
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(UpdateProblem.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(UpdateProblemActivity.this);
 
         builder.setItems(ways, (dialog, which) -> {
             if (ways[which].equals("拍照")) {
@@ -194,7 +194,6 @@ public class UpdateProblem extends AppCompatActivity {
             } else {
                 Log.d(TAG, "onClick: 打开相册");
                 ChooseFromGallery();
-                //Toast.makeText(AddProblem.this, "还没做！期待一下吧", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -297,7 +296,7 @@ public class UpdateProblem extends AppCompatActivity {
                 if (resultCode == RESULT_OK) {
                     Uri destinationUri = Uri.fromFile(new File(getExternalFilesDir("image"), System.currentTimeMillis() + "-cropped.png"));
                     UCrop.of(photoURI, destinationUri)
-                            .start(UpdateProblem.this);
+                            .start(UpdateProblemActivity.this);
                     Log.d(TAG, "onActivityResult: Attempting to crop image");
                 }
                 break;
@@ -307,7 +306,7 @@ public class UpdateProblem extends AppCompatActivity {
                     assert data != null;
                     Uri uri = data.getData();
                     Uri destinationUri = Uri.fromFile(new File(getExternalFilesDir("image"), System.currentTimeMillis() + "-cropped.png"));
-                    UCrop.of(uri, destinationUri).start(UpdateProblem.this);
+                    UCrop.of(uri, destinationUri).start(UpdateProblemActivity.this);
                     Log.d(TAG, "onActivityResult: Requesting Crop Activity");
                 }
                 break;
@@ -343,7 +342,7 @@ public class UpdateProblem extends AppCompatActivity {
 
     void UploadPictureToLC(String path) {
         binding.update.setEnabled(false);
-        AlertDialog alertDialog = LoadingDialog();
+        AlertDialog alertDialog = DialogUtils.getInstance(UpdateProblemActivity.this).LoadingDialog();
         Log.d(TAG, "UploadPictureToLC: ");
         LCFile file = null;
         try {
@@ -382,7 +381,7 @@ public class UpdateProblem extends AppCompatActivity {
                 Log.d(TAG, "onError: " + throwable.getMessage());
                 alertDialog.dismiss();
                 binding.update.setEnabled(true);
-                Toast.makeText(UpdateProblem.this, "图片上传失败！请检查网络连接并重试！", Toast.LENGTH_SHORT).show();
+                Toast.makeText(UpdateProblemActivity.this, "图片上传失败！请检查网络连接并重试！", Toast.LENGTH_SHORT).show();
             }
 
             public void onComplete() {
@@ -390,16 +389,6 @@ public class UpdateProblem extends AppCompatActivity {
         });
     }
 
-    public AlertDialog LoadingDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View dialogView = View.inflate(this, R.layout.loading_dialog, null);
-        builder.setView(dialogView);
-        AlertDialog alertDialog = builder.create();
-        alertDialog.setCancelable(false);
-        alertDialog.setCanceledOnTouchOutside(false);
-        alertDialog.show();
-        return alertDialog;
-    }
 
     public String getCurrentTime() {
         Date date = new Date();
